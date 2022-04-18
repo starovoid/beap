@@ -37,6 +37,38 @@ impl<T: Ord> Beap<T> {
         self.siftup(self.data.len() - 1, self.height);
     }
 
+    /// Removes the greatest item from the beap and returns it, or `None` if it is empty.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let mut beap = Beap::from(vec![1, 3]);
+    ///
+    /// assert_eq!(beap.pop(), Some(3));
+    /// assert_eq!(beap.pop(), Some(1));
+    /// assert_eq!(beap.pop(), None);
+    /// ```
+    ///
+    /// # Time complexity
+    ///
+    /// The worst case cost of `pop` on a beap containing *n* elements is *O*(sqrt(*2n*)).
+    pub fn pop(&mut self) -> Option<T> {
+        self.data.pop().map(|mut item| {
+            if !self.is_empty() {
+                let (start, _) = self.span(self.height).unwrap();
+                if start == self.data.len() {
+                    self.height -= 1;
+                }
+                std::mem::swap(&mut item, &mut self.data[0]);
+                self.repair(0);
+            }
+            item
+        })
+    }
+
     /// Consumes the `Beap` and returns a vector in sorted
     /// (ascending) order.
     ///
@@ -57,8 +89,8 @@ impl<T: Ord> Beap<T> {
     ///
     /// # Time complexity
     ///
-    /// *O*(*nlog(n)*) 
-    /// 
+    /// *O*(*nlog(n)*)
+    ///
     /// Inside, `Vec::sort_unstable` is used.
     pub fn into_sorted_vec(mut self) -> Vec<T> {
         self.data.sort_unstable();
@@ -101,6 +133,46 @@ impl<T: Ord> Beap<T> {
             pos = parent;
             start = prev_start;
             block -= 1;
+        }
+    }
+
+    /// Sift down in time O(sqrt(2N)).
+    /// Swap the element with its largest child until the heap property is restored.
+    fn siftdown(&mut self, mut pos: usize, mut block: usize) {
+        let (mut start, _) = self.span(block).unwrap();
+        while block < self.height {
+            let (next_start, _) = self.span(block + 1).unwrap();
+            let level_pos = pos - start;
+
+            // We will find the highest priority descendant.
+            let mut child = next_start + level_pos;
+            if child >= self.data.len() {
+                break; // The `pos` element has no descendants.
+            }
+
+            if child + 1 < self.data.len() && self.data[child + 1] > self.data[child] {
+                child += 1;
+            }
+
+            if self.data[pos] >= self.data[child] {
+                break; // The beap property is met.
+            }
+
+            self.data.swap(pos, child);
+            block += 1;
+            start = next_start;
+            pos = child;
+        }
+    }
+
+    /// Restore the beap property (after changing the `pos` element).
+    fn repair(&mut self, pos: usize) {
+        if pos == 0 {
+            self.siftdown(pos, 1);
+        } else {
+            let b = ((2 * (pos + 1)) as f64).sqrt().round() as usize;
+            self.siftup(pos, b);
+            self.siftdown(pos, b);
         }
     }
 }

@@ -1,5 +1,6 @@
 use crate::Beap;
 use rand::{thread_rng, Rng};
+use std::collections::BinaryHeap;
 
 #[test]
 fn test_push() {
@@ -34,7 +35,7 @@ fn test_push() {
 
     println!("{:?}", beap.into_vec());
 
-    // Random tests 
+    // Random tests
     let mut rng = thread_rng();
 
     for size in 1..=100 {
@@ -62,6 +63,49 @@ fn test_push() {
 }
 
 #[test]
+fn test_pop() {
+    // Fixed tests
+    let mut beap = Beap::<i32>::new();
+    assert_eq!(beap.pop(), None);
+    assert_eq!(beap.pop(), None);
+
+    beap.push(1);
+    assert_eq!(beap.pop(), Some(1));
+    assert_eq!(beap.pop(), None);
+
+    beap.push(0);
+    assert_eq!(beap.pop(), Some(0));
+    assert_eq!(beap.pop(), None);
+
+    let mut beap = Beap::from([3, 5, 1, 2, 4]);
+    assert_eq!(beap.pop(), Some(5));
+    assert_eq!(beap.pop(), Some(4));
+    assert_eq!(beap.pop(), Some(3));
+    assert_eq!(beap.pop(), Some(2));
+    assert_eq!(beap.pop(), Some(1));
+    assert_eq!(beap.pop(), None);
+
+    // Random tests against BinaryHeap
+    let mut rng = thread_rng();
+
+    for size in 0..=100 {
+        let mut elements: Vec<i64> = Vec::with_capacity(size);
+        for _ in 0..size {
+            elements.push(rng.gen_range(-30..=30));
+        }
+
+        let mut binary_heap: BinaryHeap<i64> = BinaryHeap::from(elements.clone());
+        let mut beap: Beap<i64> = Beap::from(elements);
+
+        while !binary_heap.is_empty() {
+            assert_eq!(beap.pop(), binary_heap.pop());
+            assert_eq!(beap.len(), binary_heap.len());
+        }
+        assert_eq!(beap.is_empty(), binary_heap.is_empty());
+    }
+}
+
+#[test]
 fn test_from() {
     let b1: Beap<i32> = Beap::from(vec![]);
     assert_eq!(b1.len(), 0);
@@ -77,9 +121,9 @@ fn test_from() {
     assert_eq!(b2.len(), 4);
     assert_eq!(b2.peek(), Some(&9));
 
-    // Random tests 
+    // Random tests
     let mut rng = thread_rng();
-    
+
     for size in 1..=20 {
         let mut elements: Vec<i64> = Vec::with_capacity(size);
         for _ in 0..size {
@@ -104,9 +148,9 @@ fn test_into_sorted_vec() {
     let beap: Beap<i32> = Beap::from(vec![3, 5, 9, 7]);
     assert_eq!(beap.into_sorted_vec(), vec![3, 5, 7, 9]);
 
-    // Random tests 
+    // Random tests
     let mut rng = thread_rng();
-    
+
     for size in 1..=50 {
         let mut elements: Vec<i64> = Vec::with_capacity(size);
         for _ in 0..size {

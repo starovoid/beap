@@ -136,7 +136,7 @@ fn test_from() {
         elements.sort_unstable_by(|x, y| y.cmp(x));
         assert_eq!(beap.peek(), Some(&elements[0]));
 
-        assert_eq!(beap.into_vec(), elements);
+        assert_eq!(beap.into_vec(), elements); // The sorted vector satisfies the beap properties.
     }
 }
 

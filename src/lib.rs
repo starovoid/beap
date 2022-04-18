@@ -125,7 +125,7 @@ impl<T: Ord> Beap<T> {
                 parent = prev_start; // The `pos` element does not have a left parent.
             }
 
-            if self.data[parent] > self.data[pos] {
+            if self.data[parent] >= self.data[pos] {
                 break; // The beap property is met.
             }
 

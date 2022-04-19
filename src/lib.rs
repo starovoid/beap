@@ -3,6 +3,20 @@ pub struct Beap<T> {
     height: usize,
 }
 
+impl<T: Clone> Clone for Beap<T> {
+    fn clone(&self) -> Self {
+        Beap {
+            data: self.data.clone(),
+            height: self.height,
+        }
+    }
+
+    fn clone_from(&mut self, source: &Self) {
+        self.data.clone_from(&source.data);
+        self.height.clone_from(&source.height);
+    }
+}
+
 impl<T: Ord> Beap<T> {
     /// Pushes an item onto the beap.
     ///

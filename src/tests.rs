@@ -164,3 +164,14 @@ fn test_into_sorted_vec() {
         assert_eq!(beap.into_sorted_vec(), elements);
     }
 }
+
+#[test]
+fn test_clone() {
+    let h1 = Beap::from(vec![7, 5, 9, 0, 2]);
+    let h2 = h1.clone();
+    let mut h3 = Beap::<i32>::new();
+    h3.clone_from(&h1);
+    let res = h1.into_vec();
+    assert_eq!(h2.into_vec(), res);
+    assert_eq!(h3.into_vec(), res);
+}

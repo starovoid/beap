@@ -175,3 +175,72 @@ fn test_clone() {
     assert_eq!(h2.into_vec(), res);
     assert_eq!(h3.into_vec(), res);
 }
+
+#[test]
+fn test_capacity() {
+    let mut beap: Beap<i32> = Beap::new();
+    assert_eq!(beap.capacity(), 0);
+    beap.push(1);
+    assert_eq!(beap.capacity(), 4);
+
+    let mut beap: Beap<i32> = Beap::with_capacity(2);
+    assert_eq!(beap.capacity(), 2);
+
+    beap.push(1);
+    beap.push(2);
+    assert_eq!(beap.capacity(), 2);
+
+    beap.push(3);
+    assert_eq!(beap.capacity(), 4);
+}
+
+#[test]
+fn test_reserve() {
+    let mut beap = Beap::from([3, 4]);
+    assert_eq!(beap.capacity(), 2);
+    beap.reserve(100);
+    assert!(beap.capacity() >= 102);
+}
+
+#[test]
+fn test_reserve_exact() {
+    let mut beap = Beap::from([3, 4]);
+    assert_eq!(beap.capacity(), 2);
+    beap.reserve_exact(100);
+    assert!(beap.capacity() >= 102);
+}
+
+#[test]
+fn test_shrink_to() {
+    let mut beap: Beap<i32> = Beap::with_capacity(20);
+    assert_eq!(beap.capacity(), 20);
+
+    beap.shrink_to(100);
+    assert_eq!(beap.capacity(), 20);
+
+    beap.shrink_to(10);
+    assert_eq!(beap.capacity(), 10);
+}
+
+#[test]
+fn test_shrink_to_fit() {
+    let mut beap: Beap<i32> = Beap::with_capacity(10);
+    beap.shrink_to_fit();
+    assert_eq!(beap.capacity(), 0);
+
+    beap.push(1);
+    beap.push(2);
+    beap.push(3);
+    beap.shrink_to_fit();
+    assert_eq!(beap.capacity(), 3);
+}
+
+#[test]
+fn test_is_empty() {
+    let mut beap = Beap::new();
+    assert!(beap.is_empty());
+    beap.push(1);
+    assert!(!beap.is_empty());
+    beap.pop();
+    assert!(beap.is_empty());
+}

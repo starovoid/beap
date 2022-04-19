@@ -106,6 +106,49 @@ fn test_pop() {
 }
 
 #[test]
+fn test_pop_with_push() {
+    // Let's make sure that push and pop do not interfere with each other's work.
+
+    // Fixed tests
+    let mut beap = Beap::new();
+    beap.push(2);
+    assert_eq!(beap.peek(), Some(&2));
+    assert_eq!(beap.len(), 1);
+    beap.push(4);
+    assert_eq!(beap.peek(), Some(&4));
+    assert_eq!(beap.len(), 2);
+    assert_eq!(beap.pop(), Some(4));
+    assert_eq!(beap.len(), 1);
+    assert_eq!(beap.pop(), Some(2));
+    assert_eq!(beap.len(), 0);
+    assert_eq!(beap.pop(), None);
+    assert_eq!(beap.len(), 0);
+
+    // Random tests against BinaryHeap
+    let mut rng = thread_rng();
+
+    for size in 0..=100 {
+        let mut elements: Vec<i64> = Vec::with_capacity(size);
+        for _ in 0..size {
+            elements.push(rng.gen_range(-30..=30));
+        }
+
+        let mut binary_hep: BinaryHeap<i64> = BinaryHeap::new();
+        let mut beap: Beap<i64> = Beap::new();
+
+        for x in elements {
+            binary_hep.push(x);
+            beap.push(x);
+            if x % 2 == 0 {
+                assert_eq!(beap.pop(), binary_hep.pop());
+                assert_eq!(beap.len(), binary_hep.len());
+            }
+        }
+        assert_eq!(beap.into_sorted_vec(), binary_hep.into_sorted_vec());
+    }
+}
+
+#[test]
 fn test_from() {
     let b1: Beap<i32> = Beap::from(vec![]);
     assert_eq!(b1.len(), 0);

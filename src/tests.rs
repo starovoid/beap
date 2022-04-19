@@ -149,6 +149,45 @@ fn test_pop_with_push() {
 }
 
 #[test]
+fn test_pushpop() {
+    let mut beap: Beap<i64> = Beap::new();
+    assert_eq!(beap.pushpop(5), 5);
+    assert_eq!(beap.len(), 0);
+
+    beap.push(3);
+    assert_eq!(beap.pushpop(2), 3);
+    assert_eq!(beap.peek(), Some(&2));
+    assert_eq!(beap.len(), 1);
+
+    assert_eq!(beap.pushpop(4), 4);
+    assert_eq!(beap.peek(), Some(&2));
+    assert_eq!(beap.len(), 1);
+
+    // Random tests against push and pop
+    let mut rng = thread_rng();
+
+    for size in 0..=100 {
+        let mut elements: Vec<i64> = Vec::with_capacity(size);
+        for _ in 0..size {
+            elements.push(rng.gen_range(-30..=30));
+        }
+
+        let mut beap1 = Beap::from(elements); // pushpop
+        let mut beap2 = beap1.clone(); //push and pop
+
+        for _ in 0..size * 2 {
+            let item = rng.gen_range(-50..50);
+            beap2.push(item);
+            assert_eq!(beap1.pushpop(item), beap2.pop().unwrap());
+            assert_eq!(beap1.len(), beap2.len());
+            assert_eq!(beap1.peek(), beap2.peek());
+        }
+
+        assert_eq!(beap1.into_sorted_vec(), beap2.into_sorted_vec());
+    }
+}
+
+#[test]
 fn test_from() {
     let b1: Beap<i32> = Beap::from(vec![]);
     assert_eq!(b1.len(), 0);

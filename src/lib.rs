@@ -1,6 +1,6 @@
 pub struct Beap<T> {
     data: Vec<T>,
-    height: usize,
+    pub height: usize,
 }
 
 impl<T: Clone> Clone for Beap<T> {
@@ -77,10 +77,44 @@ impl<T: Ord> Beap<T> {
                     self.height -= 1;
                 }
                 std::mem::swap(&mut item, &mut self.data[0]);
-                self.repair(0);
+                self.siftdown(0, 1);
             }
             item
         })
+    }
+
+    /// Effective equivalent to a sequential `push()` and `pop()` calls.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let mut beap = Beap::new();
+    /// assert_eq!(beap.pushpop(5), 5);
+    /// assert!(beap.is_empty());
+    ///
+    /// beap.push(10);
+    /// assert_eq!(beap.pushpop(20), 20);
+    /// assert_eq!(beap.peek(), Some(&10));
+    ///
+    /// assert_eq!(beap.pushpop(5), 10);
+    /// assert_eq!(beap.peek(), Some(&5));
+    /// ```
+    ///
+    /// # Time complexity
+    ///
+    /// If the beap is empty or the element being added
+    /// is larger (or equal) than the current top of the heap,
+    /// then the time complexity will be *O*(1), otherwise *O*(sqrt(*2n*)).
+    /// And unlike the sequential call of `push()` and `pop()`, the resizing never happens.
+    pub fn pushpop(&mut self, mut item: T) -> T {
+        if self.len() != 0 && self.data[0] > item {
+            std::mem::swap(&mut item, &mut self.data[0]);
+            self.siftdown(0, 1);
+        }
+        item
     }
 
     /// Consumes the `Beap` and returns a vector in sorted
@@ -131,9 +165,9 @@ impl<T: Ord> Beap<T> {
                     parent = prev_end; // The `pos` element does not have a right parent.
                 } else if self.data[right_parent] < self.data[left_parent] {
                     // The priority of the right parent is less than the left one
-                    parent = prev_start + pos_in_block;
+                    parent = right_parent;
                 } else {
-                    parent = prev_start + pos_in_block - 1;
+                    parent = left_parent;
                 }
             } else {
                 parent = prev_start; // The `pos` element does not have a left parent.
@@ -457,7 +491,7 @@ impl<T: Ord> From<Vec<T>> for Beap<T> {
     /// ```
     fn from(mut vec: Vec<T>) -> Beap<T> {
         vec.sort_unstable_by(|x, y| y.cmp(x));
-        let h = ((vec.len() * 2) as f64).sqrt().floor() as usize;
+        let h = ((vec.len() * 2) as f64).sqrt().round() as usize;
         Beap {
             data: vec,
             height: h,

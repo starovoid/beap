@@ -209,6 +209,23 @@ fn test_into_sorted_vec() {
 }
 
 #[test]
+fn test_peek() {
+    let mut beap = Beap::new();
+    assert_eq!(beap.peek(), None);
+
+    beap.push(1);
+    assert_eq!(beap.peek(), Some(&1));
+
+    beap.push(5);
+    assert_eq!(beap.peek(), Some(&5));
+
+    beap.pop();
+    assert_eq!(beap.peek(), Some(&1));
+    beap.pop();
+    assert_eq!(beap.peek(), None);
+}
+
+#[test]
 fn test_clone() {
     let h1 = Beap::from(vec![7, 5, 9, 0, 2]);
     let h2 = h1.clone();

@@ -1,6 +1,6 @@
 pub struct Beap<T> {
     data: Vec<T>,
-    pub height: usize,
+    height: usize,
 }
 
 impl<T: Clone> Clone for Beap<T> {

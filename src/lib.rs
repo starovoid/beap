@@ -117,6 +117,28 @@ impl<T: Ord> Beap<T> {
         item
     }
 
+    /// Returns true if the beap contains a value.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let beap = Beap::from([1, 5, 3, 7]);
+    /// 
+    /// assert!(beap.contains(&1));
+    /// assert!(beap.contains(&5));
+    /// assert!(!beap.contains(&0));
+    /// ```
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(sqrt(*2n*))
+    pub fn contains(&self, val: &T) -> bool {
+        self.index(val).is_some()
+    }
+
     /// Consumes the `Beap` and returns a vector in sorted
     /// (ascending) order.
     ///
@@ -221,6 +243,86 @@ impl<T: Ord> Beap<T> {
             let b = ((2 * (pos + 1)) as f64).sqrt().round() as usize;
             self.siftup(pos, b);
             self.siftdown(pos, b);
+        }
+    }
+
+    /// Given the val value, find the index of an element with such a value
+    /// or return None if such an element does not exist.
+    /// Time complexity: O(sqrt(2n)).
+    ///
+    /// Let there be Beap        9
+    ///                        8   7
+    ///                      6   5   4
+    ///                    3   2   1   0
+    ///
+    /// Consider it as the upper left corner of the matrix:
+    /// 9 7 4 0
+    /// 8 5 1
+    /// 6 2
+    /// 3
+    ///
+    /// Let's start the search from the upper-right corner
+    /// (the last element of the inner vector).
+    ///
+    /// 1) If the priority of the desired element is greater than that
+    /// of the element in the current position, then move to the left along the line.
+    ///
+    /// 2) If the priority of the desired element is less than that of the element
+    /// in the current position, then move it down the column,
+    ///
+    /// 3) and if there is no element at the bottom, then move down and to the left
+    /// (= left on the last layer of the heap).
+    ///
+    /// 4) As soon as we find an element with equal val priority, we return its index,
+    /// and if we find ourselves in the left in the lower corner and the value in it
+    /// is not equal to val, so the desired element does not exist and it's time to return None.
+    fn index(&self, val: &T) -> Option<usize> {
+        if self.len() == 0 {
+            return None;
+        }
+
+        let mut block = self.height;
+        let (left_low, mut right_up) = self.span(self.height).unwrap();
+
+        if right_up >= self.len() {
+            block -= 1;
+            right_up = self.span(block).unwrap().1;
+        }
+
+        let mut pos = right_up;
+        while pos != left_low {
+            if self.data[pos] == *val {
+                return Some(pos);
+            }
+
+            let (start, _) = self.span(block).unwrap();
+            let block_pos = pos - start;
+
+            if block > 1 && block_pos > 0 && *val > self.data[pos] {
+                // Case 1: go to the left
+                let (prev_start, _) = self.span(block - 1).unwrap();
+                pos = prev_start + block_pos - 1;
+                block -= 1;
+            } else if *val < self.data[pos] && block < self.height {
+                let (next_start, _) = self.span(block + 1).unwrap();
+                if next_start + block_pos >= self.len() {
+                    pos -= 1; // Case 3: Go left and down (diagonally).
+                } else {
+                    // Case 2: Go down.
+                    pos = next_start + block_pos;
+                    block += 1;
+                }
+            } else if block_pos > 0 {
+                pos -= 1; // Case 3: Go left and down (diagonally).
+            } else {
+                return None; // Element not found.
+            }
+        }
+
+        if *val == self.data[left_low] {
+            Some(left_low)
+        } else {
+            None
         }
     }
 }

@@ -1,6 +1,6 @@
 use crate::Beap;
 use rand::{thread_rng, Rng};
-use std::collections::BinaryHeap;
+use std::collections::{BinaryHeap, HashSet};
 
 #[test]
 fn test_push() {
@@ -342,4 +342,42 @@ fn test_is_empty() {
     assert!(!beap.is_empty());
     beap.pop();
     assert!(beap.is_empty());
+}
+
+#[test]
+fn test_contains() {
+    let mut beap = Beap::new();
+    assert!(!beap.contains(&0));
+
+    beap.push(0);
+    assert!(beap.contains(&0));
+    assert!(!beap.contains(&10));
+
+    beap.push(1);
+    beap.push(2);
+    assert!(beap.contains(&1));
+    assert!(beap.contains(&2));
+    assert!(!beap.contains(&30));
+
+    // Random tests against HashSet
+    let mut rng = thread_rng();
+
+    for size in 0..=100 {
+        let mut elements: Vec<i64> = Vec::with_capacity(size);
+        for _ in 0..size {
+            elements.push(rng.gen_range(-30..=30));
+        }
+
+        let beap = Beap::from(elements.clone());
+        let set: HashSet<i64> = elements.clone().into_iter().collect();
+
+        for _ in 0..100 {
+            let x = rng.gen_range(-30..=30);
+            assert_eq!(beap.contains(&x), set.contains(&x));
+        }
+
+        for x in elements {
+            assert!(beap.contains(&x));
+        }
+    }
 }

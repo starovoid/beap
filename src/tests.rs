@@ -381,3 +381,64 @@ fn test_contains() {
         }
     }
 }
+
+#[test]
+fn test_remove() {
+    let mut beap = Beap::from([1, 2, 3, 4, 5]);
+    assert!(!beap.remove(&10));
+    assert_eq!(beap.len(), 5);
+
+    assert!(beap.remove(&3));
+    assert_eq!(beap.len(), 4);
+
+    assert!(beap.remove(&5));
+    assert_eq!(beap.len(), 3);
+
+    assert!(!beap.remove(&3));
+    assert_eq!(beap.len(), 3);
+
+    assert!(beap.remove(&2));
+    assert_eq!(beap.len(), 2);
+
+    assert!(beap.remove(&1));
+    assert_eq!(beap.len(), 1);
+
+    assert!(beap.remove(&4));
+    assert_eq!(beap.len(), 0);
+
+    assert!(!beap.remove(&4));
+    assert_eq!(beap.len(), 0);
+
+    // Random tests against HashSet
+    let mut rng = thread_rng();
+
+    for size in 0..=100 {
+        let mut elements: Vec<i64> = Vec::with_capacity(size);
+        for _ in 0..size {
+            elements.push(rng.gen_range(-30..=30));
+        }
+
+        let mut beap = Beap::from(elements.clone());
+
+        for _ in 0..100 {
+            let x = rng.gen_range(-30..=30);
+            let cont = elements.contains(&x);
+            assert_eq!(beap.remove(&x), cont);
+
+            if cont {
+                let mut idx = 0;
+                for (i, &v) in elements.iter().enumerate() {
+                    if v == x {
+                        idx = i;
+                        break;
+                    }
+                }
+                elements.remove(idx);
+            }
+        }
+
+        for x in elements.clone() {
+            assert_eq!(beap.contains(&x), elements.contains(&x));
+        }
+    }
+}

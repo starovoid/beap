@@ -126,7 +126,7 @@ impl<T: Ord> Beap<T> {
     /// ```
     /// use beap::Beap;
     /// let beap = Beap::from([1, 5, 3, 7]);
-    /// 
+    ///
     /// assert!(beap.contains(&1));
     /// assert!(beap.contains(&5));
     /// assert!(!beap.contains(&0));
@@ -137,6 +137,46 @@ impl<T: Ord> Beap<T> {
     /// *O*(sqrt(*2n*))
     pub fn contains(&self, val: &T) -> bool {
         self.index(val).is_some()
+    }
+
+    /// Removes a value from the beap. Returns whether the value was present in the beap.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let mut beap = Beap::from([1, 5, 3]);
+    ///
+    /// assert!(beap.remove(&3));
+    /// assert!(!beap.remove(&3));
+    /// assert_eq!(beap.len(), 2);
+    /// ```
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(sqrt(*2n*))
+    pub fn remove(&mut self, val: &T) -> bool {
+        match self.index(val) {
+            Some(idx) => {
+                self.data.pop().map(|mut item| {
+                    if !self.is_empty() {
+                        let (start, _) = self.span(self.height).unwrap();
+                        if start == self.data.len() {
+                            self.height -= 1;
+                        }
+
+                        if idx != self.len() {
+                            std::mem::swap(&mut item, &mut self.data[idx]);
+                            self.repair(idx);
+                        }
+                    }
+                });
+                true
+            }
+            None => false,
+        }
     }
 
     /// Consumes the `Beap` and returns a vector in sorted

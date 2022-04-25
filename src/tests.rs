@@ -1,5 +1,6 @@
-use crate::Beap;
+use crate::{Beap, PeekMut};
 use rand::{thread_rng, Rng};
+use std::collections::binary_heap;
 use std::collections::{BinaryHeap, HashSet};
 
 #[test]
@@ -440,5 +441,73 @@ fn test_remove() {
         for x in elements.clone() {
             assert_eq!(beap.contains(&x), elements.contains(&x));
         }
+    }
+}
+
+#[test]
+fn test_peek_mut() {
+    let mut beap: Beap<i32> = Beap::new();
+    assert!(beap.peek_mut().is_none());
+
+    beap.push(3);
+    {
+        let mut top = beap.peek_mut().unwrap();
+        *top = 4;
+    }
+    assert_eq!(beap.peek(), Some(&4));
+
+    beap.push(1);
+    beap.push(6);
+    assert_eq!(beap.peek(), Some(&6));
+    {
+        let mut top = beap.peek_mut().unwrap();
+        *top = 0;
+    }
+    assert_eq!(beap.peek(), Some(&4));
+
+    {
+        let top = beap.peek_mut().unwrap();
+        assert_eq!(PeekMut::pop(top), 4);
+    }
+    assert_eq!(beap.peek(), Some(&1));
+
+    // Random tests against BinaryHeap
+    let mut rng = thread_rng();
+
+    for size in 1..=100 {
+        let mut elements: Vec<i64> = Vec::with_capacity(size);
+        for _ in 0..size {
+            elements.push(rng.gen_range(-30..=30));
+        }
+
+        let mut binary_heap: BinaryHeap<i64> = BinaryHeap::from(elements.clone());
+        let mut beap: Beap<i64> = Beap::from(elements);
+
+        for _ in 0..size * 2 {
+            {
+                let new_val: i64 = rng.gen_range(-50..=50);
+                let mut binary_heap_top = binary_heap.peek_mut().unwrap();
+                let mut beap_top = beap.peek_mut().unwrap();
+                *binary_heap_top = new_val;
+                *beap_top = new_val;
+            }
+            assert_eq!(beap.peek(), binary_heap.peek());
+        }
+
+        assert_eq!(
+            beap.clone().into_sorted_vec(),
+            binary_heap.clone().into_sorted_vec()
+        );
+
+        for _ in 0..size {
+            {
+                let bin_val = binary_heap.peek_mut().unwrap();
+                let weak_val = beap.peek_mut().unwrap();
+                assert_eq!(PeekMut::pop(weak_val), binary_heap::PeekMut::pop(bin_val));
+            }
+            assert_eq!(beap.peek(), binary_heap.peek());
+        }
+        assert!(beap.is_empty());
+        assert!(binary_heap.is_empty());
     }
 }

@@ -1,6 +1,59 @@
+use std::fmt;
+use std::ops::{Deref, DerefMut};
+
 pub struct Beap<T> {
     data: Vec<T>,
     height: usize,
+}
+
+/// Structure wrapping a mutable reference to the greatest item on a `Beap`.
+///
+/// This `struct` is created by the [`peek_mut`] method on [`Beap`]. See
+/// its documentation for more.
+///
+/// [`peek_mut`]: Beap::peek_mut
+pub struct PeekMut<'a, T: 'a + Ord> {
+    beap: &'a mut Beap<T>,
+    sift: bool,
+}
+
+impl<T: Ord + fmt::Debug> fmt::Debug for PeekMut<'_, T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_tuple("PeekMut").field(&self.beap.data[0]).finish()
+    }
+}
+
+impl<T: Ord> Drop for PeekMut<'_, T> {
+    fn drop(&mut self) {
+        if self.sift {
+            self.beap.siftdown(0, 1);
+        }
+    }
+}
+
+impl<T: Ord> Deref for PeekMut<'_, T> {
+    type Target = T;
+    fn deref(&self) -> &T {
+        debug_assert!(!self.beap.is_empty());
+        self.beap.data.get(0).unwrap()
+    }
+}
+
+impl<T: Ord> DerefMut for PeekMut<'_, T> {
+    fn deref_mut(&mut self) -> &mut T {
+        debug_assert!(!self.beap.is_empty());
+        self.sift = true;
+        self.beap.data.get_mut(0).unwrap()
+    }
+}
+
+impl<'a, T: Ord> PeekMut<'a, T> {
+    /// Removes the peeked value from the heap and returns it.
+    pub fn pop(mut this: PeekMut<'a, T>) -> T {
+        let value = this.beap.pop().unwrap();
+        this.sift = false;
+        value
+    }
 }
 
 impl<T: Clone> Clone for Beap<T> {
@@ -18,6 +71,46 @@ impl<T: Clone> Clone for Beap<T> {
 }
 
 impl<T: Ord> Beap<T> {
+    /// Returns a mutable reference to the greatest item in the beap, or
+    /// `None` if it is empty.
+    ///
+    /// Note: If the `PeekMut` value is leaked, the beap may be in an
+    /// inconsistent state.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let mut beap = Beap::new();
+    /// assert!(beap.peek_mut().is_none());
+    ///
+    /// beap.push(1);
+    /// beap.push(5);
+    /// beap.push(2);
+    /// {
+    ///     let mut val = beap.peek_mut().unwrap();
+    ///     *val = 0;
+    /// }
+    /// assert_eq!(beap.peek(), Some(&2));
+    /// ```
+    ///
+    /// # Time complexity
+    ///
+    /// If the item is modified then the worst case time complexity is *O*(sqrt(*2n*)),
+    /// otherwise it's *O*(1).
+    pub fn peek_mut(&mut self) -> Option<PeekMut<'_, T>> {
+        if self.is_empty() {
+            None
+        } else {
+            Some(PeekMut {
+                beap: self,
+                sift: false,
+            })
+        }
+    }
+
     /// Pushes an item onto the beap.
     ///
     /// # Examples

@@ -410,7 +410,6 @@ fn test_remove() {
     assert!(!beap.remove(&4));
     assert_eq!(beap.len(), 0);
 
-    // Random tests against HashSet
     let mut rng = thread_rng();
 
     for size in 0..=100 {
@@ -509,5 +508,60 @@ fn test_peek_mut() {
         }
         assert!(beap.is_empty());
         assert!(binary_heap.is_empty());
+    }
+}
+
+#[test]
+fn test_replace() {
+    let mut beap: Beap<i32> = Beap::new();
+    assert_eq!(beap.replace(&2, 1), false);
+
+    beap.push(2);
+    assert_eq!(beap.replace(&10, 2), false);
+    assert_eq!(beap.replace(&2, 1), true);
+    assert_eq!(beap.peek(), Some(&1));
+
+    beap.push(3);
+    beap.push(4);
+    assert_eq!(beap.replace(&4, 5), true);
+    assert_eq!(beap.peek(), Some(&5));
+
+    assert_eq!(beap.replace(&3, 30), true);
+    assert_eq!(beap.peek(), Some(&30));
+
+    beap.push(5);
+    assert_eq!(beap.replace(&5, 500), true);
+
+    assert_eq!(beap.into_sorted_vec(), vec![1, 5, 30, 500]);
+
+    // Random tests against Vec
+    let mut rng = thread_rng();
+
+    for size in 0..=100 {
+        let mut elements: Vec<i64> = Vec::with_capacity(size);
+        for _ in 0..size {
+            elements.push(rng.gen_range(-30..=30));
+        }
+
+        let mut beap = Beap::from(elements.clone());
+
+        for _ in 0..100 {
+            let old: i64 = rng.gen_range(-30..=30);
+            let new: i64 = rng.gen_range(-30..=30);
+
+            let mut cont = false;
+            for i in 0..size {
+                if elements[i] == old {
+                    elements[i] = new;
+                    cont = true;
+                    break;
+                }
+            }
+
+            assert_eq!(beap.replace(&old, new), cont);
+        }
+
+        elements.sort_unstable();
+        assert_eq!(beap.into_sorted_vec(), elements);
     }
 }

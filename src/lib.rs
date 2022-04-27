@@ -272,6 +272,40 @@ impl<T: Ord> Beap<T> {
         }
     }
 
+    /// Replaces the first found element with the value ```old``` with the
+    /// value ```new```, returns ```true``` if the element ```old``` was found.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let mut beap = Beap::new();
+    /// beap.push(5);
+    /// beap.push(10);
+    ///
+    /// assert!(beap.replace(&10, 100));
+    /// assert!(!beap.replace(&1, 200));
+    ///
+    /// assert_eq!(beap.into_sorted_vec(), vec![5, 100]);
+    /// ```
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(sqrt(*2n*)).
+    pub fn replace(&mut self, old: &T, new: T) -> bool {
+        let idx = self.index(old);
+        match idx {
+            Some(pos) => {
+                self.data[pos] = new;
+                self.repair(pos);
+                true
+            }
+            None => false,
+        }
+    }
+
     /// Consumes the `Beap` and returns a vector in sorted
     /// (ascending) order.
     ///

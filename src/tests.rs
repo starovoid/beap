@@ -410,6 +410,7 @@ fn test_remove() {
     assert!(!beap.remove(&4));
     assert_eq!(beap.len(), 0);
 
+    // Random tests against Vec
     let mut rng = thread_rng();
 
     for size in 0..=100 {

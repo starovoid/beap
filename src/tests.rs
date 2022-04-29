@@ -1,5 +1,6 @@
 use crate::{Beap, PeekMut};
 use rand::{thread_rng, Rng};
+use std::cmp::Reverse;
 use std::collections::binary_heap;
 use std::collections::{BinaryHeap, HashSet};
 
@@ -564,5 +565,47 @@ fn test_replace() {
 
         elements.sort_unstable();
         assert_eq!(beap.into_sorted_vec(), elements);
+    }
+}
+
+#[test]
+fn test_tail() {
+    let mut beap: Beap<i32> = Beap::new();
+    assert_eq!(beap.tail(), None);
+
+    beap.push(1);
+    assert_eq!(beap.tail(), Some(&1));
+
+    beap.push(2);
+    assert_eq!(beap.tail(), Some(&1));
+
+    beap.push(3);
+    assert_eq!(beap.tail(), Some(&1));
+
+    beap.push(0);
+    assert_eq!(beap.tail(), Some(&0));
+
+    beap.push(5);
+    assert_eq!(beap.tail(), Some(&0));
+
+    beap.push(0);
+    assert_eq!(beap.tail(), Some(&0));
+
+    beap.push(-1);
+    assert_eq!(beap.tail(), Some(&-1));
+
+    // Random tests against BinaryHeap
+    let mut rng = thread_rng();
+
+    for size in 0..=100 {
+        let mut bin_heap = BinaryHeap::with_capacity(size);
+        let mut beap = Beap::with_capacity(size);
+
+        for _ in 0..size {
+            let x: i64 = rng.gen_range(-30..=30);
+            bin_heap.push(Reverse(x));
+            beap.push(x);
+            assert_eq!(*beap.tail().unwrap(), bin_heap.peek().unwrap().0);
+        }
     }
 }

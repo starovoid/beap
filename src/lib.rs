@@ -306,6 +306,44 @@ impl<T: Ord> Beap<T> {
         }
     }
 
+    /// Returns the smallest item in the beap, or `None` if it is empty.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let mut beap = Beap::new();
+    /// assert_eq!(beap.tail(), None);
+    ///
+    /// beap.push(9);
+    /// beap.push(3);
+    /// beap.push(6);
+    /// assert_eq!(beap.tail(), Some(&3));
+    /// ```
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(sqrt(*2n*))
+    pub fn tail(&self) -> Option<&T> {
+        match self.span(self.height) {
+            None => None,
+            Some((start, end)) => {
+                if self.height == 1 {
+                    self.data.get(0)
+                } else {
+                    let empty = end + 1 - self.len();
+                    self.data.get(
+                        ((start - empty)..=(end - empty))
+                            .min_by_key(|&i| &self.data[i])
+                            .unwrap(),
+                    )
+                }
+            }
+        }
+    }
+
     /// Consumes the `Beap` and returns a vector in sorted
     /// (ascending) order.
     ///

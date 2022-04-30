@@ -1,4 +1,4 @@
-use crate::{Beap, PeekMut};
+use crate::{Beap, PeekMut, TailMut};
 use rand::{thread_rng, Rng};
 use std::cmp::Reverse;
 use std::collections::binary_heap;
@@ -607,5 +607,84 @@ fn test_tail() {
             beap.push(x);
             assert_eq!(*beap.tail().unwrap(), bin_heap.peek().unwrap().0);
         }
+    }
+}
+
+#[test]
+fn test_tail_mut() {
+    let mut beap: Beap<i32> = Beap::new();
+    assert!(beap.tail_mut().is_none());
+
+    beap.push(3);
+    {
+        let mut top = beap.tail_mut().unwrap();
+        *top = 4;
+    }
+    assert_eq!(beap.tail(), Some(&4));
+
+    beap.push(1);
+    beap.push(6);
+    assert_eq!(beap.tail(), Some(&1));
+    {
+        let mut tail = beap.tail_mut().unwrap();
+        *tail = 0;
+    }
+    assert_eq!(beap.tail(), Some(&0));
+
+    {
+        let mut tail = beap.tail_mut().unwrap();
+        *tail = 10;
+    }
+    assert_eq!(beap.tail(), Some(&4));
+
+    println!("{:?}", beap.clone().into_vec());
+    {
+        let tail = beap.tail_mut().unwrap();
+        println!("{:?}", tail);
+        assert_eq!(TailMut::pop(tail), 4);
+    }
+    assert_eq!(beap.tail(), Some(&6));
+
+    // Random tests against BinaryHeap
+    let mut rng = thread_rng();
+
+    for size in 1..=100 {
+        let mut elements: Vec<i64> = Vec::with_capacity(size);
+        for _ in 0..size {
+            elements.push(rng.gen_range(-30..=30));
+        }
+
+        let mut bin_heap: BinaryHeap<Reverse<i64>> =
+            BinaryHeap::from_iter(elements.iter().map(|&x| Reverse(x)));
+        let mut beap: Beap<i64> = Beap::from(elements);
+
+        for _ in 0..size * 2 {
+            {
+                let new_val: i64 = rng.gen_range(-50..=50);
+                let mut bin_heap_tail = bin_heap.peek_mut().unwrap();
+                let mut beap_tail = beap.tail_mut().unwrap();
+                *bin_heap_tail = Reverse(new_val);
+                *beap_tail = new_val;
+            }
+            assert_eq!(*beap.tail().unwrap(), bin_heap.peek().unwrap().0);
+        }
+
+        let bin_heap_items = bin_heap.clone().into_sorted_vec();
+        let bin_heap_items: Vec<i64> = bin_heap_items.into_iter().map(|x| x.0).rev().collect();
+        assert_eq!(beap.clone().into_sorted_vec(), bin_heap_items,);
+
+        for _ in 0..size {
+            {
+                let bin_val = bin_heap.peek_mut().unwrap();
+                let beap_val = beap.tail_mut().unwrap();
+                assert_eq!(TailMut::pop(beap_val), binary_heap::PeekMut::pop(bin_val).0);
+            }
+            assert_eq!(beap.is_empty(), bin_heap.is_empty());
+            if !beap.is_empty() {
+                assert_eq!(*beap.tail().unwrap(), bin_heap.peek().unwrap().0);
+            }
+        }
+        assert!(beap.is_empty());
+        assert!(bin_heap.is_empty());
     }
 }

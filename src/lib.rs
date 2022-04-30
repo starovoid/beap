@@ -70,6 +70,57 @@ impl<T: Clone> Clone for Beap<T> {
     }
 }
 
+/// Structure wrapping a mutable reference to the smallest item on a `Beap`.
+///
+/// This `struct` is created by the [`tail_mut`] method on [`Beap`]. See
+/// its documentation for more.
+///
+/// [`tail_mut`]: Beap::tail_mut
+pub struct TailMut<'a, T: 'a + Ord> {
+    beap: &'a mut Beap<T>,
+    sift: bool,
+    pos: usize,
+}
+
+impl<T: Ord + fmt::Debug> fmt::Debug for TailMut<'_, T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_tuple("TailMut")
+            .field(&self.beap.data[self.pos])
+            .finish()
+    }
+}
+
+impl<T: Ord> Drop for TailMut<'_, T> {
+    fn drop(&mut self) {
+        if self.sift {
+            self.beap.repair(self.pos);
+        }
+    }
+}
+
+impl<T: Ord> Deref for TailMut<'_, T> {
+    type Target = T;
+    fn deref(&self) -> &T {
+        self.beap.data.get(self.pos).unwrap()
+    }
+}
+
+impl<T: Ord> DerefMut for TailMut<'_, T> {
+    fn deref_mut(&mut self) -> &mut T {
+        self.sift = true;
+        self.beap.data.get_mut(self.pos).unwrap()
+    }
+}
+
+impl<'a, T: Ord> TailMut<'a, T> {
+    /// Removes the peeked value from the beap and returns it.
+    pub fn pop(mut this: TailMut<'a, T>) -> T {
+        let value = this.beap.remove_from_pos(this.pos).unwrap();
+        this.sift = false;
+        value
+    }
+}
+
 impl<T: Ord> Beap<T> {
     /// Returns a mutable reference to the greatest item in the beap, or
     /// `None` if it is empty.
@@ -332,6 +383,50 @@ impl<T: Ord> Beap<T> {
         }
     }
 
+    /// Returns a mutable reference to the smallest item in the beap, or
+    /// `None` if it is empty.
+    ///
+    /// Note: If the `TailMut` value is leaked, the beap may be in an
+    /// inconsistent state.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let mut beap = Beap::new();
+    /// assert!(beap.tail_mut().is_none());
+    ///
+    /// beap.push(1);
+    /// beap.push(5);
+    /// beap.push(2);
+    /// {
+    ///     let mut val = beap.tail_mut().unwrap();
+    ///     *val = 10;
+    /// }
+    /// assert_eq!(beap.tail(), Some(&2));
+    /// ```
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(sqrt(*2n*)),
+    pub fn tail_mut(&mut self) -> Option<TailMut<'_, T>> {
+        if let Some((start, end)) = self.span(self.height) {
+            let empty = end + 1 - self.len();
+            let idx = ((start - empty)..=(end - empty))
+                .min_by_key(|&i| &self.data[i])
+                .unwrap();
+            Some(TailMut {
+                beap: self,
+                sift: false,
+                pos: idx,
+            })
+        } else {
+            None
+        }
+    }
+
     /// Consumes the `Beap` and returns a vector in sorted
     /// (ascending) order.
     ///
@@ -521,7 +616,7 @@ impl<T: Ord> Beap<T> {
 
     // Removing an item in the specified position.
     fn remove_from_pos(&mut self, pos: usize) -> Option<T> {
-        self.data.pop().map(|mut item| {
+        let item_opt = self.data.pop().map(|mut item| {
             if !self.is_empty() {
                 let (start, _) = self.span(self.height).unwrap();
                 if start == self.data.len() {
@@ -533,9 +628,10 @@ impl<T: Ord> Beap<T> {
                     self.repair(pos);
                 }
             }
-            Some(item)
+            item
         });
-        None
+
+        item_opt
     }
 }
 

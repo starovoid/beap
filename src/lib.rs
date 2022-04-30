@@ -253,19 +253,7 @@ impl<T: Ord> Beap<T> {
     pub fn remove(&mut self, val: &T) -> bool {
         match self.index(val) {
             Some(idx) => {
-                self.data.pop().map(|mut item| {
-                    if !self.is_empty() {
-                        let (start, _) = self.span(self.height).unwrap();
-                        if start == self.data.len() {
-                            self.height -= 1;
-                        }
-
-                        if idx != self.len() {
-                            std::mem::swap(&mut item, &mut self.data[idx]);
-                            self.repair(idx);
-                        }
-                    }
-                });
+                self.remove_from_pos(idx);
                 true
             }
             None => false,
@@ -529,6 +517,25 @@ impl<T: Ord> Beap<T> {
         } else {
             None
         }
+    }
+
+    // Removing an item in the specified position.
+    fn remove_from_pos(&mut self, pos: usize) -> Option<T> {
+        self.data.pop().map(|mut item| {
+            if !self.is_empty() {
+                let (start, _) = self.span(self.height).unwrap();
+                if start == self.data.len() {
+                    self.height -= 1;
+                }
+
+                if pos != self.len() {
+                    std::mem::swap(&mut item, &mut self.data[pos]);
+                    self.repair(pos);
+                }
+            }
+            Some(item)
+        });
+        None
     }
 }
 

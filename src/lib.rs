@@ -222,6 +222,8 @@ impl<T: Ord> Beap<T> {
                 }
                 std::mem::swap(&mut item, &mut self.data[0]);
                 self.siftdown(0, 1);
+            } else {
+                self.height = 0;
             }
             item
         })
@@ -627,6 +629,8 @@ impl<T: Ord> Beap<T> {
                     std::mem::swap(&mut item, &mut self.data[pos]);
                     self.repair(pos);
                 }
+            } else {
+                self.height = 0;
             }
             item
         });

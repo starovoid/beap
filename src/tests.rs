@@ -86,6 +86,8 @@ fn test_pop() {
     assert_eq!(beap.pop(), Some(2));
     assert_eq!(beap.pop(), Some(1));
     assert_eq!(beap.pop(), None);
+    assert_eq!(beap.pop(), None);
+    assert_eq!(beap.pop(), None);
 
     // Random tests against BinaryHeap
     let mut rng = thread_rng();

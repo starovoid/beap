@@ -690,3 +690,62 @@ fn test_tail_mut() {
         assert!(bin_heap.is_empty());
     }
 }
+
+#[test]
+fn test_pop_tail() {
+    // Fixed tests
+    let mut beap = Beap::<i32>::new();
+    assert_eq!(beap.pop_tail(), None);
+    assert_eq!(beap.pop_tail(), None);
+
+    beap.push(1);
+    assert_eq!(beap.pop_tail(), Some(1));
+    assert_eq!(beap.pop_tail(), None);
+
+    beap.push(0);
+    assert_eq!(beap.pop_tail(), Some(0));
+    assert_eq!(beap.pop_tail(), None);
+
+    let mut beap = Beap::from([3, 5, 1, 2, 4]);
+    assert_eq!(beap.pop_tail(), Some(1));
+    assert_eq!(beap.pop_tail(), Some(2));
+    assert_eq!(beap.pop_tail(), Some(3));
+    assert_eq!(beap.pop_tail(), Some(4));
+    assert_eq!(beap.pop_tail(), Some(5));
+    assert_eq!(beap.pop_tail(), None);
+    assert_eq!(beap.pop_tail(), None);
+    assert_eq!(beap.pop_tail(), None);
+
+    let mut beap = Beap::from([3, 5, 1, 2, 4]);
+    assert_eq!(beap.pop_tail(), Some(1));
+    assert_eq!(beap.pop(), Some(5));
+    assert_eq!(beap.pop_tail(), Some(2));
+    assert_eq!(beap.pop(), Some(4));
+    assert_eq!(beap.pop(), Some(3));
+    assert_eq!(beap.pop_tail(), None);
+
+    beap.push(0);
+    assert_eq!(beap.pop_tail(), Some(0));
+    assert_eq!(beap.pop(), None);
+    assert_eq!(beap.pop_tail(), None);
+
+    // Random tests against BinaryHeap
+    let mut rng = thread_rng();
+
+    for size in 0..=100 {
+        let mut elements: Vec<i64> = Vec::with_capacity(size);
+        for _ in 0..size {
+            elements.push(rng.gen_range(-30..=30));
+        }
+
+        let mut bin_heap: BinaryHeap<Reverse<i64>> =
+            BinaryHeap::from_iter(elements.iter().map(|&x| Reverse(x)));
+        let mut beap: Beap<i64> = Beap::from(elements.clone());
+
+        while !bin_heap.is_empty() {
+            assert_eq!(beap.pop_tail().unwrap(), bin_heap.pop().unwrap().0);
+            assert_eq!(beap.len(), bin_heap.len());
+        }
+        assert_eq!(beap.is_empty(), bin_heap.is_empty());
+    }
+}

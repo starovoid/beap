@@ -429,6 +429,36 @@ impl<T: Ord> Beap<T> {
         }
     }
 
+    /// Removes the smallest item from the beap and returns it, or `None` if it is empty.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let mut beap = Beap::from(vec![1, 3]);
+    ///
+    /// assert_eq!(beap.pop_tail(), Some(1));
+    /// assert_eq!(beap.pop_tail(), Some(3));
+    /// assert_eq!(beap.pop_tail(), None);
+    /// ```
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(sqrt(*2n*)).
+    pub fn pop_tail(&mut self) -> Option<T> {
+        if let Some((start, end)) = self.span(self.height) {
+            let empty = end + 1 - self.len();
+            let idx = ((start - empty)..=(end - empty))
+                .min_by_key(|&i| &self.data[i])
+                .unwrap();
+            self.remove_from_pos(idx)
+        } else {
+            None
+        }
+    }
+
     /// Consumes the `Beap` and returns a vector in sorted
     /// (ascending) order.
     ///

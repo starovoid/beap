@@ -940,7 +940,7 @@ impl<T> Beap<T> {
     }
 
     /// Start and end indexes of block b.
-    /// Returns `None` if the beap is empty.
+    /// Returns `None` if the block is empty.
     fn span(&self, b: usize) -> Option<(usize, usize)> {
         if b == 0 {
             None

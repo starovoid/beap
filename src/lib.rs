@@ -1,4 +1,5 @@
 use std::fmt;
+use std::iter::FusedIterator;
 use std::ops::{Deref, DerefMut};
 
 pub struct Beap<T> {
@@ -908,6 +909,36 @@ impl<T> Beap<T> {
         self.len() == 0
     }
 
+    /// Clears the bi-parental heap, returning an iterator over the removed elements
+    /// in arbitrary order. If the iterator is dropped before being fully
+    /// consumed, it drops the remaining elements in arbitrary order.
+    ///
+    /// The returned iterator keeps a mutable borrow on the beap to optimize
+    /// its implementation.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let mut beap = Beap::from([1, 3, 5]);
+    ///
+    /// assert!(!beap.is_empty());
+    ///
+    /// for x in beap.drain() {
+    ///     println!("{}", x);
+    /// }
+    ///
+    /// assert!(beap.is_empty());
+    /// ```
+    pub fn drain(&mut self) -> Drain<'_, T> {
+        self.height = 0;
+        Drain {
+            iter: self.data.drain(..),
+        }
+    }
+
     /// Start and end indexes of block b.
     /// Returns `None` if the beap is empty.
     fn span(&self, b: usize) -> Option<(usize, usize)> {
@@ -964,6 +995,40 @@ impl<T: Ord, const N: usize> From<[T; N]> for Beap<T> {
         Beap::from(Vec::from(arr))
     }
 }
+
+/// A draining iterator over the elements of a `Beap`.
+///
+/// This `struct` is created by [`Beap::drain()`]. See its
+/// documentation for more.
+///
+/// [`drain`]: Beap::drain
+#[derive(Debug)]
+pub struct Drain<'a, T: 'a> {
+    iter: std::vec::Drain<'a, T>,
+}
+
+impl<T> Iterator for Drain<'_, T> {
+    type Item = T;
+
+    #[inline]
+    fn next(&mut self) -> Option<T> {
+        self.iter.next()
+    }
+
+    #[inline]
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.iter.size_hint()
+    }
+}
+
+impl<T> DoubleEndedIterator for Drain<'_, T> {
+    #[inline]
+    fn next_back(&mut self) -> Option<T> {
+        self.iter.next_back()
+    }
+}
+
+impl<T> FusedIterator for Drain<'_, T> {}
 
 #[cfg(test)]
 mod tests;

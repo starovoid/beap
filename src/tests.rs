@@ -749,3 +749,35 @@ fn test_pop_tail() {
         assert_eq!(beap.is_empty(), bin_heap.is_empty());
     }
 }
+
+#[test]
+fn test_drain() {
+    let mut beap = Beap::from([5, 3, 1, 4, 2]);
+    assert!(!beap.is_empty());
+
+    let mut content: Vec<i32> = beap.drain().collect();
+    content.sort();
+    assert_eq!(content, vec![1, 2, 3, 4, 5]);
+
+    assert!(beap.is_empty());
+
+    // Random tests
+    let mut rng = rand::thread_rng();
+    for size in 0..=20 {
+        let mut elements: Vec<i64> = Vec::with_capacity(size);
+        for _ in 0..size {
+            elements.push(rng.gen_range(-30..=30));
+        }
+
+        let mut beap = Beap::from(elements.clone());
+        assert_eq!(beap.len(), size);
+
+        let mut content: Vec<i64> = beap.drain().collect();
+        assert!(beap.is_empty());
+
+        content.sort();
+        elements.sort();
+
+        assert_eq!(content, elements);
+    }
+}

@@ -781,3 +781,17 @@ fn test_drain() {
         assert_eq!(content, elements);
     }
 }
+
+#[test]
+fn test_clear() {
+    let mut rng = rand::thread_rng();
+    for size in 0..=20 {
+        let mut beap = Beap::with_capacity(20);
+        for _ in 0..size {
+            beap.push(rng.gen_range(-30..=30));
+        }
+        assert_eq!(beap.len(), size);
+        beap.clear();
+        assert!(beap.is_empty());
+    }
+}

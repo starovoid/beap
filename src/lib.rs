@@ -939,6 +939,26 @@ impl<T> Beap<T> {
         }
     }
 
+    /// Drops all items from the beap.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let mut beap = Beap::from([1, 3, 5]);
+    ///
+    /// assert!(!beap.is_empty());
+    ///
+    /// beap.clear();
+    ///
+    /// assert!(beap.is_empty());
+    /// ```
+    pub fn clear(&mut self) {
+        self.drain();
+    }
+
     /// Start and end indexes of block b.
     /// Returns `None` if the block is empty.
     fn span(&self, b: usize) -> Option<(usize, usize)> {

@@ -668,6 +668,36 @@ impl<T: Ord> Beap<T> {
 
         item_opt
     }
+
+    /// Moves all the elements of `other` into `self`, leaving `other` empty.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use beap::Beap;
+    ///
+    /// let v = vec![-10, 1, 2, 3, 3];
+    /// let mut a = Beap::from(v);
+    ///
+    /// let v = vec![-20, 5, 43];
+    /// let mut b = Beap::from(v);
+    ///
+    /// a.append(&mut b);
+    ///
+    /// assert_eq!(a.into_sorted_vec(), [-20, -10, 1, 2, 3, 3, 5, 43]);
+    /// assert!(b.is_empty());
+    /// ```
+    ///
+    /// # Time complexity
+    ///
+    /// Operation can be done in *O*(n*log(n)) in worst case,
+    /// where *n* = self.len() + other.len().
+    pub fn append(&mut self, other: &mut Self) {
+        self.data.append(&mut other.data);
+        self.data.sort_unstable_by(|x, y| y.cmp(x));
+    }
 }
 
 impl<T> Beap<T> {

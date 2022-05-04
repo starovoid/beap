@@ -795,3 +795,44 @@ fn test_clear() {
         assert!(beap.is_empty());
     }
 }
+
+#[test]
+fn test_append() {
+    let mut b1: Beap<i64> = Beap::new();
+    let mut b2: Beap<i64> = Beap::new();
+    b1.append(&mut b2);
+    assert_eq!(b1.into_sorted_vec(), vec![]);
+
+    // Random tests against BinaryHeap
+    let mut rng = thread_rng();
+    for size1 in 0..100 {
+        let mut elements1: Vec<i64> = Vec::with_capacity(size1);
+        for _ in 0..size1 {
+            elements1.push(rng.gen_range(-30..=30));
+        }
+
+        let beap = Beap::from(elements1.clone());
+        let bin_heap = BinaryHeap::from(elements1);
+
+        for size2 in 0..100 {
+            let mut elements2: Vec<i64> = Vec::with_capacity(size2);
+            for _ in 0..size2 {
+                elements2.push(rng.gen_range(-30..=30));
+            }
+
+            let mut b2 = Beap::from(elements2.clone());
+            let mut bh2 = BinaryHeap::from(elements2);
+
+            let mut b1 = beap.clone();
+            let mut bh1 = bin_heap.clone();
+
+            b1.append(&mut b2);
+            bh1.append(&mut bh2);
+
+            assert_eq!(b1.peek(), bh1.peek());
+            assert_eq!(b1.len(), bh1.len());
+            assert!(b2.is_empty());
+            assert_eq!(b1.into_sorted_vec(), bh1.into_sorted_vec());
+        }
+    }
+}

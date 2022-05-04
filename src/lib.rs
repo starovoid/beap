@@ -692,7 +692,7 @@ impl<T: Ord> Beap<T> {
     ///
     /// # Time complexity
     ///
-    /// Operation can be done in *O*(n*log(n)) in worst case,
+    /// Operation can be done in *O*(n*log(n)),
     /// where *n* = self.len() + other.len().
     pub fn append(&mut self, other: &mut Self) {
         self.data.append(&mut other.data);

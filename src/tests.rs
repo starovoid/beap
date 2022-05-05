@@ -837,3 +837,39 @@ fn test_append() {
         }
     }
 }
+
+#[test]
+fn append_vec() {
+    let mut beap = Beap::new();
+    beap.append_vec(&mut vec![]);
+    assert_eq!(beap.len(), 0);
+
+    beap.append_vec(&mut vec![3, 8, 5]);
+    assert_eq!(beap.into_sorted_vec(), vec![3, 5, 8]);
+
+    // Random tests
+    let mut rng = thread_rng();
+    let mut beap: Beap<i64> = Beap::new();
+    let mut all_elements: Vec<i64> = Vec::with_capacity(5050);
+
+    let mut len = 0;
+    for size in 0..=100 {
+        len += size;
+
+        let mut elements: Vec<i64> = Vec::with_capacity(size);
+        for _ in 0..size {
+            elements.push(rng.gen_range(-30..=30));
+        }
+
+        all_elements.append(&mut elements.clone());
+        all_elements.sort_unstable();
+
+        beap.append_vec(&mut elements);
+
+        assert_eq!(beap.len(), len);
+        assert_eq!(beap.clone().into_sorted_vec(), all_elements);
+        assert!(elements.is_empty());
+    }
+
+    assert_eq!(beap.into_sorted_vec(), all_elements);
+}

@@ -699,6 +699,33 @@ impl<T: Ord> Beap<T> {
         self.data.append(&mut other.data);
         self.data.sort_unstable_by(|x, y| y.cmp(x));
     }
+
+    /// Moves all the elements of `other` into `self`, leaving `other` empty.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use beap::Beap;
+    ///
+    /// let mut beap = Beap::from([-10, 1, 2, 3, 3]);
+    ///
+    /// let mut v = vec![-20, 5, 43];
+    /// beap.append_vec(&mut v);
+    ///
+    /// assert_eq!(beap.into_sorted_vec(), [-20, -10, 1, 2, 3, 3, 5, 43]);
+    /// assert!(v.is_empty());
+    /// ```
+    ///
+    /// # Time complexity
+    ///
+    /// Operation can be done in *O*(n*log(n)),
+    /// where *n* = self.len() + other.len().
+    pub fn append_vec(&mut self, other: &mut Vec<T>) {
+        self.data.append(other);
+        self.data.sort_unstable_by(|x, y| y.cmp(x));
+    }
 }
 
 impl<T> Beap<T> {

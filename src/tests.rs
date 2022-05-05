@@ -832,6 +832,7 @@ fn test_append() {
             assert_eq!(b1.peek(), bh1.peek());
             assert_eq!(b1.len(), bh1.len());
             assert!(b2.is_empty());
+            assert_eq!(b2.tail(), None);
             assert_eq!(b1.into_sorted_vec(), bh1.into_sorted_vec());
         }
     }

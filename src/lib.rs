@@ -695,6 +695,7 @@ impl<T: Ord> Beap<T> {
     /// Operation can be done in *O*(n*log(n)),
     /// where *n* = self.len() + other.len().
     pub fn append(&mut self, other: &mut Self) {
+        other.height = 0;
         self.data.append(&mut other.data);
         self.data.sort_unstable_by(|x, y| y.cmp(x));
     }

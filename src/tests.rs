@@ -224,6 +224,23 @@ fn test_from() {
 
         assert_eq!(beap.into_vec(), elements); // The sorted vector satisfies the beap properties.
     }
+
+    // From iter
+    let beap_from_vec = Beap::from(vec![3, 2, 5, 4, 1]);
+
+    let mut beap_from_iter: Beap<i32> = [3, 2, 5, 4, 1].into_iter().collect();
+    let mut temp_beap = beap_from_vec.clone();
+    while let Some((a, b)) = temp_beap.pop().zip(beap_from_iter.pop()) {
+        assert_eq!(a, b);
+    }
+    assert!(beap_from_iter.is_empty());
+
+    let mut beap_from_iter = Beap::from_iter([3, 2, 5, 4, 1].into_iter());
+    let mut temp_beap = beap_from_vec.clone();
+    while let Some((a, b)) = temp_beap.pop().zip(beap_from_iter.pop()) {
+        assert_eq!(a, b);
+    }
+    assert!(beap_from_iter.is_empty());
 }
 
 #[test]

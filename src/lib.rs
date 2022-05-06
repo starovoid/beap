@@ -1074,6 +1074,29 @@ impl<T: Ord, const N: usize> From<[T; N]> for Beap<T> {
     }
 }
 
+impl<T: Ord> FromIterator<T> for Beap<T> {
+    /// Building Beap from iterator.
+    ///
+    /// This conversion has *O*(*nlog(n)*) time complexity.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use beap::Beap;
+    ///
+    /// let mut b1 = Beap::from([1, 4, 2, 3]);
+    /// let mut b2: Beap<i32> = [1, 4, 2, 3].into_iter().collect();
+    /// while let Some((a, b)) = b1.pop().zip(b2.pop()) {
+    ///     assert_eq!(a, b);
+    /// }
+    /// ```
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Beap<T> {
+        Beap::from(iter.into_iter().collect::<Vec<_>>())
+    }
+}
+
 /// A draining iterator over the elements of a `Beap`.
 ///
 /// This `struct` is created by [`Beap::drain()`]. See its

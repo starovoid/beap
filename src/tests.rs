@@ -890,3 +890,60 @@ fn append_vec() {
 
     assert_eq!(beap.into_sorted_vec(), all_elements);
 }
+
+#[test]
+fn test_extend() {
+    let mut beap: Beap<i64> = Beap::new();
+
+    beap.extend([0]);
+    assert_eq!(beap.len(), 1);
+
+    beap.extend(Vec::<i64>::new());
+    assert_eq!(beap.len(), 1);
+
+    beap.extend(vec![7, 9, 2, 1].into_iter());
+    assert_eq!(beap.into_sorted_vec(), vec![0, 1, 2, 7, 9]);
+
+    // Random tests against BinaryHeap
+    let mut rng = thread_rng();
+
+    let mut beap = Beap::new();
+    let mut bin_heap = BinaryHeap::new();
+
+    for size in 0..100 {
+        let mut elements: Vec<i64> = Vec::with_capacity(size);
+        for _ in 0..size {
+            elements.push(rng.gen_range(-30..=30));
+        }
+
+        beap.extend(elements.clone());
+        bin_heap.extend(elements.clone());
+
+        beap.extend(elements.clone().into_iter());
+        bin_heap.extend(elements.into_iter());
+
+        assert_eq!(beap.len(), bin_heap.len());
+        assert_eq!(beap.peek(), bin_heap.peek());
+        assert_eq!(
+            beap.clone().into_sorted_vec(),
+            bin_heap.clone().into_sorted_vec()
+        );
+    }
+
+    assert_eq!(beap.into_sorted_vec(), bin_heap.into_sorted_vec());
+}
+
+#[test]
+fn test_extend_ref() {
+    let mut beap: Beap<i64> = Beap::new();
+
+    beap.extend([&0]);
+    assert_eq!(beap.len(), 1);
+
+    beap.extend(Vec::<i64>::new());
+    assert_eq!(beap.len(), 1);
+
+    beap.extend(vec![&7, &9, &2, &1].into_iter());
+    beap.extend(vec![&4, &3, &6, &5]);
+    assert_eq!(beap.into_sorted_vec(), vec![0, 1, 2, 3, 4, 5, 6, 7, 9]);
+}

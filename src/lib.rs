@@ -1097,6 +1097,33 @@ impl<T: Ord> FromIterator<T> for Beap<T> {
     }
 }
 
+impl<T: Ord> Extend<T> for Beap<T> {
+    /// Extend Beap with elements from the iterator.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use beap::Beap;
+    ///
+    /// let mut beap = Beap::new();
+    /// beap.extend(vec![7, 1, 0, 4, 5, 3]);
+    /// assert_eq!(beap.into_sorted_vec(), [0, 1, 3, 4, 5, 7]);
+    /// ```
+    fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
+        for x in iter {
+            self.push(x);
+        }
+    }
+}
+
+impl<'a, T: 'a + Ord + Copy> Extend<&'a T> for Beap<T> {
+    fn extend<I: IntoIterator<Item = &'a T>>(&mut self, iter: I) {
+        self.extend(iter.into_iter().cloned());
+    }
+}
+
 /// A draining iterator over the elements of a `Beap`.
 ///
 /// This `struct` is created by [`Beap::drain()`]. See its

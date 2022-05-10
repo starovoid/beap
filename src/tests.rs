@@ -947,3 +947,108 @@ fn test_extend_ref() {
     beap.extend(vec![&4, &3, &6, &5]);
     assert_eq!(beap.into_sorted_vec(), vec![0, 1, 2, 3, 4, 5, 6, 7, 9]);
 }
+
+#[test]
+fn test_into_iter() {
+    let beap: Beap<i32> = Beap::new();
+    assert_eq!(beap.into_iter().next(), None);
+
+    let beap = Beap::from(vec![3, 8, 5]);
+    let mut data: Vec<i32> = beap.into_iter().collect();
+    data.sort();
+    assert_eq!(data, vec![3, 5, 8]);
+
+    // Random tests
+    let mut rng = rand::thread_rng();
+    for size in 0..=100 {
+        let mut elements: Vec<i64> = Vec::with_capacity(size);
+        for _ in 0..size {
+            elements.push(rng.gen_range(-30..=30));
+        }
+
+        let b = Beap::from(elements.clone());
+        elements.sort();
+        assert_eq!(b.into_sorted_vec(), elements);
+    }
+}
+
+#[test]
+fn test_iter() {
+    let beap: Beap<i32> = Beap::new();
+    assert_eq!(beap.into_iter().next(), None);
+
+    let beap = Beap::from(vec![3, 8]);
+    let iter = beap.iter();
+
+    // Clone
+    let data: Vec<&i32> = iter.clone().collect();
+    assert_eq!(data, vec![&8, &3]);
+    // Size hint
+    assert_eq!(iter.size_hint(), (2, Some(2)));
+    // Debug
+    assert_eq!(format!("{:?}", iter), "Iter([8, 3])");
+    // Size hint
+    assert_eq!(iter.size_hint(), (2, Some(2)));
+    // Last
+    assert_eq!(iter.last(), Some(&3));
+
+    // Test Iterator for WeakHeapIter
+    let mut rng = rand::thread_rng();
+    for size in 0..=50 {
+        let mut elements: Vec<i64> = Vec::with_capacity(size);
+        for _ in 0..size {
+            elements.push(rng.gen_range(-30..=30));
+        }
+
+        let b = Beap::from(elements);
+        let mut content: Vec<i64> = b.iter().map(|x| *x).collect();
+        content.sort();
+
+        assert_eq!(content, b.into_sorted_vec());
+    }
+}
+
+#[test]
+fn test_into_iter_ref() {
+    let beap: Beap<i32> = Beap::new();
+    assert_eq!((&beap).into_iter().next(), None);
+
+    let beap = Beap::from(vec![3, 8]);
+    let iter = (&beap).into_iter();
+
+    for x in &beap {
+        println!("{}", x);
+    }
+
+    for x in iter {
+        println!("{}", x);
+    }
+
+    let iter = (&beap).into_iter();
+    // Clone
+    let data: Vec<&i32> = iter.clone().collect();
+    assert_eq!(data, vec![&8, &3]);
+    // Size hint
+    assert_eq!(iter.size_hint(), (2, Some(2)));
+    // Debug
+    assert_eq!(format!("{:?}", iter), "Iter([8, 3])");
+    // Size hint
+    assert_eq!(iter.size_hint(), (2, Some(2)));
+    // Last
+    assert_eq!(iter.last(), Some(&3));
+
+    // Test Iterator for WeakHeapIter
+    let mut rng = rand::thread_rng();
+    for size in 0..=50 {
+        let mut elements: Vec<i64> = Vec::with_capacity(size);
+        for _ in 0..size {
+            elements.push(rng.gen_range(-30..=30));
+        }
+
+        let beap = Beap::from(elements);
+        let mut content: Vec<i64> = (&beap).into_iter().map(|x| *x).collect();
+        content.sort();
+
+        assert_eq!(content, beap.into_sorted_vec());
+    }
+}

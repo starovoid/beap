@@ -1,9 +1,18 @@
 [package]
 name = "beap"
 version = "0.1.0"
+authors = ["PrototypeRailGun"]
+license = "MIT"
 edition = "2021"
+readme = "README.md"
+description = "Bi-parental heap data structure implementation in Rust"
+homepage = "https://github.com/PrototypeRailGun/beap"
+repository = "https://github.com/PrototypeRailGun/beap"
+keywords = ["heap", "beap", "sorting"]
+categories = ["data structures"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "beap"
 
 [dependencies]
 

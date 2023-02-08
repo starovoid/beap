@@ -368,7 +368,7 @@ impl<T: Ord> Beap<T> {
     /// then the time complexity will be *O*(1), otherwise *O*(sqrt(*2n*)).
     /// And unlike the sequential call of `push()` and `pop()`, the resizing never happens.
     pub fn pushpop(&mut self, mut item: T) -> T {
-        if self.len() != 0 && self.data[0] > item {
+        if !self.is_empty() && self.data[0] > item {
             std::mem::swap(&mut item, &mut self.data[0]);
             self.siftdown(0, 1);
         }
@@ -709,7 +709,7 @@ impl<T: Ord> Beap<T> {
     /// and if we find ourselves in the left in the lower corner and the value in it
     /// is not equal to val, so the desired element does not exist and it's time to return None.
     fn index(&self, val: &T) -> Option<usize> {
-        if self.len() == 0 {
+        if self.is_empty() {
             return None;
         }
 
@@ -760,7 +760,7 @@ impl<T: Ord> Beap<T> {
 
     // Removing an item in the specified position.
     fn remove_from_pos(&mut self, pos: usize) -> Option<T> {
-        let item_opt = self.data.pop().map(|mut item| {
+        self.data.pop().map(|mut item| {
             if !self.is_empty() {
                 let (start, _) = self.span(self.height).unwrap();
                 if start == self.data.len() {
@@ -775,9 +775,7 @@ impl<T: Ord> Beap<T> {
                 self.height = 0;
             }
             item
-        });
-
-        item_opt
+        })
     }
 
     /// Moves all the elements of `other` into `self`, leaving `other` empty.
@@ -1160,6 +1158,12 @@ impl<T> Beap<T> {
         } else {
             Some((b * (b - 1) / 2, b * (b + 1) / 2 - 1))
         }
+    }
+}
+
+impl<T> Default for Beap<T> {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

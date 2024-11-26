@@ -1,13 +1,13 @@
 [package]
 name = "beap"
 version = "0.1.0"
-authors = ["PrototypeRailGun"]
+authors = ["starovoid"]
 license = "MIT"
 edition = "2021"
 readme = "README.md"
 description = "Bi-parental heap data structure implementation in Rust"
-homepage = "https://github.com/PrototypeRailGun/beap"
-repository = "https://github.com/PrototypeRailGun/beap"
+homepage = "https://github.com/starovoid/beap"
+repository = "https://github.com/starovoid/beap"
 keywords = ["heap", "beap", "sorting"]
 categories = ["data structures"]
 

@@ -147,7 +147,7 @@ impl<T: Ord> Deref for PeekMut<'_, T> {
     type Target = T;
     fn deref(&self) -> &T {
         debug_assert!(!self.beap.is_empty());
-        self.beap.data.get(0).unwrap()
+        self.beap.data.first().unwrap()
     }
 }
 
@@ -155,7 +155,7 @@ impl<T: Ord> DerefMut for PeekMut<'_, T> {
     fn deref_mut(&mut self) -> &mut T {
         debug_assert!(!self.beap.is_empty());
         self.sift = true;
-        self.beap.data.get_mut(0).unwrap()
+        self.beap.data.first_mut().unwrap()
     }
 }
 
@@ -484,7 +484,7 @@ impl<T: Ord> Beap<T> {
             None => None,
             Some((start, end)) => {
                 if self.height == 1 {
-                    self.data.get(0)
+                    self.data.first()
                 } else {
                     let empty = end + 1 - self.len();
                     self.data.get(
@@ -697,17 +697,17 @@ impl<T: Ord> Beap<T> {
     /// (the last element of the inner vector).
     ///
     /// 1) If the priority of the desired element is greater than that
-    /// of the element in the current position, then move to the left along the line.
+    ///     of the element in the current position, then move to the left along the line.
     ///
     /// 2) If the priority of the desired element is less than that of the element
-    /// in the current position, then move it down the column,
+    ///     in the current position, then move it down the column,
     ///
     /// 3) and if there is no element at the bottom, then move down and to the left
-    /// (= left on the last layer of the heap).
+    ///     (= left on the last layer of the heap).
     ///
     /// 4) As soon as we find an element with equal val priority, we return its index,
-    /// and if we find ourselves in the left in the lower corner and the value in it
-    /// is not equal to val, so the desired element does not exist and it's time to return None.
+    ///     and if we find ourselves in the left in the lower corner and the value in it
+    ///     is not equal to val, so the desired element does not exist and it's time to return None.
     fn index(&self, val: &T) -> Option<usize> {
         if self.is_empty() {
             return None;
@@ -928,7 +928,7 @@ impl<T> Beap<T> {
     /// Cost is *O*(1) in the worst case.
     #[must_use]
     pub fn peek(&self) -> Option<&T> {
-        self.data.get(0)
+        self.data.first()
     }
 
     /// Returns the number of elements the beap can hold without reallocating.
@@ -1038,7 +1038,7 @@ impl<T> Beap<T> {
         self.data.shrink_to(min_capacity);
     }
 
-    /// Consumes the `Beap<T>` and returns the underlying vector Vec<T>
+    /// Consumes the `Beap<T>` and returns the underlying vector `Vec<T>`
     /// in arbitrary order.
     ///
     /// # Examples

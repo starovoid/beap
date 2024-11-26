@@ -235,7 +235,7 @@ fn test_from() {
     }
     assert!(beap_from_iter.is_empty());
 
-    let mut beap_from_iter = Beap::from_iter([3, 2, 5, 4, 1].into_iter());
+    let mut beap_from_iter = Beap::from_iter([3, 2, 5, 4, 1]);
     let mut temp_beap = beap_from_vec.clone();
     while let Some((a, b)) = temp_beap.pop().zip(beap_from_iter.pop()) {
         assert_eq!(a, b);
@@ -535,23 +535,23 @@ fn test_peek_mut() {
 #[test]
 fn test_replace() {
     let mut beap: Beap<i32> = Beap::new();
-    assert_eq!(beap.replace(&2, 1), false);
+    assert!(!beap.replace(&2, 1));
 
     beap.push(2);
-    assert_eq!(beap.replace(&10, 2), false);
-    assert_eq!(beap.replace(&2, 1), true);
+    assert!(!beap.replace(&10, 2));
+    assert!(beap.replace(&2, 1));
     assert_eq!(beap.peek(), Some(&1));
 
     beap.push(3);
     beap.push(4);
-    assert_eq!(beap.replace(&4, 5), true);
+    assert!(beap.replace(&4, 5));
     assert_eq!(beap.peek(), Some(&5));
 
-    assert_eq!(beap.replace(&3, 30), true);
+    assert!(beap.replace(&3, 30));
     assert_eq!(beap.peek(), Some(&30));
 
     beap.push(5);
-    assert_eq!(beap.replace(&5, 500), true);
+    assert!(beap.replace(&5, 500));
 
     assert_eq!(beap.into_sorted_vec(), vec![1, 5, 30, 500]);
 
@@ -571,9 +571,9 @@ fn test_replace() {
             let new: i64 = rng.gen_range(-30..=30);
 
             let mut cont = false;
-            for i in 0..size {
-                if elements[i] == old {
-                    elements[i] = new;
+            for item in elements.iter_mut().take(size) {
+                if *item == old {
+                    *item = new;
                     cont = true;
                     break;
                 }
@@ -901,8 +901,8 @@ fn test_extend() {
     beap.extend(Vec::<i64>::new());
     assert_eq!(beap.len(), 1);
 
-    beap.extend(vec![7, 9, 2, 1].into_iter());
-    assert_eq!(beap.into_sorted_vec(), vec![0, 1, 2, 7, 9]);
+    beap.extend([7, 9, 2, 1]);
+    assert_eq!(beap.into_sorted_vec(), [0, 1, 2, 7, 9]);
 
     // Random tests against BinaryHeap
     let mut rng = thread_rng();
@@ -943,8 +943,8 @@ fn test_extend_ref() {
     beap.extend(Vec::<i64>::new());
     assert_eq!(beap.len(), 1);
 
-    beap.extend(vec![&7, &9, &2, &1].into_iter());
-    beap.extend(vec![&4, &3, &6, &5]);
+    beap.extend([&7, &9, &2, &1]);
+    beap.extend([&4, &3, &6, &5]);
     assert_eq!(beap.into_sorted_vec(), vec![0, 1, 2, 3, 4, 5, 6, 7, 9]);
 }
 
@@ -1001,7 +1001,7 @@ fn test_iter() {
         }
 
         let b = Beap::from(elements);
-        let mut content: Vec<i64> = b.iter().map(|x| *x).collect();
+        let mut content: Vec<i64> = (&b).into_iter().copied().collect();
         content.sort();
 
         assert_eq!(content, b.into_sorted_vec());
@@ -1046,7 +1046,7 @@ fn test_into_iter_ref() {
         }
 
         let beap = Beap::from(elements);
-        let mut content: Vec<i64> = (&beap).into_iter().map(|x| *x).collect();
+        let mut content: Vec<i64> = (&beap).into_iter().copied().collect();
         content.sort();
 
         assert_eq!(content, beap.into_sorted_vec());

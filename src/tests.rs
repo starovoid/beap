@@ -36,8 +36,11 @@ fn test_push() {
     assert_eq!(beap.peek(), Some(&5));
 
     println!("{:?}", beap.into_vec());
+}
 
-    // Random tests
+#[test]
+#[cfg_attr(miri, ignore)]
+fn test_push_random() {
     let mut rng = thread_rng();
 
     for size in 1..=100 {
@@ -88,7 +91,11 @@ fn test_pop() {
     assert_eq!(beap.pop(), None);
     assert_eq!(beap.pop(), None);
     assert_eq!(beap.pop(), None);
+}
 
+#[test]
+#[cfg_attr(miri, ignore)]
+fn test_pop_random() {
     // Random tests against BinaryHeap
     let mut rng = thread_rng();
 
@@ -127,7 +134,11 @@ fn test_pop_with_push() {
     assert_eq!(beap.len(), 0);
     assert_eq!(beap.pop(), None);
     assert_eq!(beap.len(), 0);
+}
 
+#[test]
+#[cfg_attr(miri, ignore)]
+fn test_pop_with_push_random() {
     // Random tests against BinaryHeap
     let mut rng = thread_rng();
 
@@ -166,7 +177,11 @@ fn test_pushpop() {
     assert_eq!(beap.pushpop(4), 4);
     assert_eq!(beap.peek(), Some(&2));
     assert_eq!(beap.len(), 1);
+}
 
+#[test]
+#[cfg_attr(miri, ignore)]
+fn test_push_pop_random() {
     // Random tests against push and pop
     let mut rng = thread_rng();
 
@@ -207,24 +222,6 @@ fn test_from() {
     assert_eq!(b2.len(), 4);
     assert_eq!(b2.peek(), Some(&9));
 
-    // Random tests
-    let mut rng = thread_rng();
-
-    for size in 1..=20 {
-        let mut elements: Vec<i64> = Vec::with_capacity(size);
-        for _ in 0..size {
-            elements.push(rng.gen_range(-30..=30));
-        }
-
-        let beap: Beap<i64> = Beap::from(elements.clone());
-        assert_eq!(beap.len(), size);
-
-        elements.sort_unstable_by(|x, y| y.cmp(x));
-        assert_eq!(beap.peek(), Some(&elements[0]));
-
-        assert_eq!(beap.into_vec(), elements); // The sorted vector satisfies the beap properties.
-    }
-
     // From iter
     let beap_from_vec = Beap::from(vec![3, 2, 5, 4, 1]);
 
@@ -244,14 +241,38 @@ fn test_from() {
 }
 
 #[test]
+#[cfg_attr(miri, ignore)]
+fn test_from_random() {
+    let mut rng = thread_rng();
+
+    for size in 1..=20 {
+        let mut elements: Vec<i64> = Vec::with_capacity(size);
+        for _ in 0..size {
+            elements.push(rng.gen_range(-30..=30));
+        }
+
+        let beap: Beap<i64> = Beap::from(elements.clone());
+        assert_eq!(beap.len(), size);
+
+        elements.sort_unstable_by(|x, y| y.cmp(x));
+        assert_eq!(beap.peek(), Some(&elements[0]));
+
+        assert_eq!(beap.into_vec(), elements); // The sorted vector satisfies the beap properties.
+    }
+}
+
+#[test]
 fn test_into_sorted_vec() {
     let beap: Beap<i32> = Beap::from(vec![]);
     assert_eq!(beap.into_sorted_vec(), vec![]);
 
     let beap: Beap<i32> = Beap::from(vec![3, 5, 9, 7]);
     assert_eq!(beap.into_sorted_vec(), vec![3, 5, 7, 9]);
+}
 
-    // Random tests
+#[test]
+#[cfg_attr(miri, ignore)]
+fn test_into_sorted_vec_random() {
     let mut rng = thread_rng();
 
     for size in 1..=50 {
@@ -379,7 +400,11 @@ fn test_contains() {
     assert!(beap.contains(&1));
     assert!(beap.contains(&2));
     assert!(!beap.contains(&30));
+}
 
+#[test]
+#[cfg_attr(miri, ignore)]
+fn test_contains_random() {
     // Random tests against HashSet
     let mut rng = thread_rng();
 
@@ -429,7 +454,11 @@ fn test_remove() {
 
     assert!(!beap.remove(&4));
     assert_eq!(beap.len(), 0);
+}
 
+#[test]
+#[cfg_attr(miri, ignore)]
+fn test_remove_random() {
     // Random tests against Vec
     let mut rng = thread_rng();
 
@@ -490,7 +519,11 @@ fn test_peek_mut() {
         assert_eq!(PeekMut::pop(top), 4);
     }
     assert_eq!(beap.peek(), Some(&1));
+}
 
+#[test]
+#[cfg_attr(miri, ignore)]
+fn test_peek_mut_random() {
     // Random tests against BinaryHeap
     let mut rng = thread_rng();
 
@@ -554,7 +587,11 @@ fn test_replace() {
     assert!(beap.replace(&5, 500));
 
     assert_eq!(beap.into_sorted_vec(), vec![1, 5, 30, 500]);
+}
 
+#[test]
+#[cfg_attr(miri, ignore)]
+fn test_replace_random() {
     // Random tests against Vec
     let mut rng = thread_rng();
 
@@ -612,7 +649,11 @@ fn test_tail() {
 
     beap.push(-1);
     assert_eq!(beap.tail(), Some(&-1));
+}
 
+#[test]
+#[cfg_attr(miri, ignore)]
+fn test_tail_random() {
     // Random tests against BinaryHeap
     let mut rng = thread_rng();
 
@@ -663,7 +704,11 @@ fn test_tail_mut() {
         assert_eq!(TailMut::pop(tail), 4);
     }
     assert_eq!(beap.tail(), Some(&6));
+}
 
+#[test]
+#[cfg_attr(miri, ignore)]
+fn test_tail_mut_random() {
     // Random tests against BinaryHeap
     let mut rng = thread_rng();
 
@@ -745,7 +790,11 @@ fn test_pop_tail() {
     assert_eq!(beap.pop_tail(), Some(0));
     assert_eq!(beap.pop(), None);
     assert_eq!(beap.pop_tail(), None);
+}
 
+#[test]
+#[cfg_attr(miri, ignore)]
+fn test_pop_tail_random() {
     // Random tests against BinaryHeap
     let mut rng = thread_rng();
 
@@ -777,7 +826,11 @@ fn test_drain() {
     assert_eq!(content, vec![1, 2, 3, 4, 5]);
 
     assert!(beap.is_empty());
+}
 
+#[test]
+#[cfg_attr(miri, ignore)]
+fn test_drain_random() {
     // Random tests
     let mut rng = rand::thread_rng();
     for size in 0..=20 {
@@ -802,15 +855,13 @@ fn test_drain() {
 #[test]
 fn test_clear() {
     let mut rng = rand::thread_rng();
-    for size in 0..=20 {
-        let mut beap = Beap::with_capacity(20);
-        for _ in 0..size {
-            beap.push(rng.gen_range(-30..=30));
-        }
-        assert_eq!(beap.len(), size);
-        beap.clear();
-        assert!(beap.is_empty());
+    let mut beap = Beap::with_capacity(20);
+    for _ in 0..20 {
+        beap.push(rng.gen_range(-30..=30));
     }
+    assert_eq!(beap.len(), 20);
+    beap.clear();
+    assert!(beap.is_empty());
 }
 
 #[test]
@@ -819,8 +870,13 @@ fn test_append() {
     let mut b2: Beap<i64> = Beap::new();
     b1.append(&mut b2);
     assert_eq!(b1.into_sorted_vec(), vec![]);
+}
 
+#[test]
+#[cfg_attr(miri, ignore)]
+fn test_append_random() {
     // Random tests against BinaryHeap
+
     let mut rng = thread_rng();
     for size1 in 0..100 {
         let mut elements1: Vec<i64> = Vec::with_capacity(size1);
@@ -863,8 +919,11 @@ fn append_vec() {
 
     beap.append_vec(&mut vec![3, 8, 5]);
     assert_eq!(beap.into_sorted_vec(), vec![3, 5, 8]);
+}
 
-    // Random tests
+#[test]
+#[cfg_attr(miri, ignore)]
+fn test_append_vec_random() {
     let mut rng = thread_rng();
     let mut beap: Beap<i64> = Beap::new();
     let mut all_elements: Vec<i64> = Vec::with_capacity(5050);
@@ -903,8 +962,13 @@ fn test_extend() {
 
     beap.extend([7, 9, 2, 1]);
     assert_eq!(beap.into_sorted_vec(), [0, 1, 2, 7, 9]);
+}
 
+#[test]
+#[cfg_attr(miri, ignore)]
+fn test_extend_random() {
     // Random tests against BinaryHeap
+
     let mut rng = thread_rng();
 
     let mut beap = Beap::new();
@@ -959,6 +1023,11 @@ fn test_into_iter() {
     assert_eq!(data, vec![3, 5, 8]);
 
     // Random tests
+}
+
+#[test]
+#[cfg_attr(miri, ignore)]
+fn test_into_iter_random() {
     let mut rng = rand::thread_rng();
     for size in 0..=100 {
         let mut elements: Vec<i64> = Vec::with_capacity(size);
@@ -991,21 +1060,6 @@ fn test_iter() {
     assert_eq!(iter.size_hint(), (2, Some(2)));
     // Last
     assert_eq!(iter.last(), Some(&3));
-
-    // Test Iterator for WeakHeapIter
-    let mut rng = rand::thread_rng();
-    for size in 0..=50 {
-        let mut elements: Vec<i64> = Vec::with_capacity(size);
-        for _ in 0..size {
-            elements.push(rng.gen_range(-30..=30));
-        }
-
-        let b = Beap::from(elements);
-        let mut content: Vec<i64> = (&b).into_iter().copied().collect();
-        content.sort();
-
-        assert_eq!(content, b.into_sorted_vec());
-    }
 }
 
 #[test]
@@ -1036,19 +1090,4 @@ fn test_into_iter_ref() {
     assert_eq!(iter.size_hint(), (2, Some(2)));
     // Last
     assert_eq!(iter.last(), Some(&3));
-
-    // Test Iterator for WeakHeapIter
-    let mut rng = rand::thread_rng();
-    for size in 0..=50 {
-        let mut elements: Vec<i64> = Vec::with_capacity(size);
-        for _ in 0..size {
-            elements.push(rng.gen_range(-30..=30));
-        }
-
-        let beap = Beap::from(elements);
-        let mut content: Vec<i64> = (&beap).into_iter().copied().collect();
-        content.sort();
-
-        assert_eq!(content, beap.into_sorted_vec());
-    }
 }

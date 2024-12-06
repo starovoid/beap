@@ -56,12 +56,13 @@ impl<T: Ord> Beap<T> {
     pub fn pop(&mut self) -> Option<T> {
         self.data.pop().map(|mut item| {
             if !self.is_empty() {
-                let (start, _) = self.span(self.height).unwrap();
-                if start == self.data.len() {
-                    self.height -= 1;
+                if let Some((start, _)) = self.span(self.height) {
+                    if start == self.data.len() {
+                        self.height -= 1;
+                    }
+                    std::mem::swap(&mut item, &mut self.data[0]);
+                    self.siftdown(0, 1);
                 }
-                std::mem::swap(&mut item, &mut self.data[0]);
-                self.siftdown(0, 1);
             } else {
                 self.height = 0;
             }
@@ -208,21 +209,18 @@ impl<T: Ord> Beap<T> {
     ///
     /// *O*(sqrt(*2n*))
     pub fn tail(&self) -> Option<&T> {
-        match self.span(self.height) {
-            None => None,
-            Some((start, end)) => {
-                if self.height == 1 {
-                    self.data.first()
-                } else {
-                    let empty = end + 1 - self.len();
-                    self.data.get(
-                        ((start - empty)..=(end - empty))
-                            .min_by_key(|&i| &self.data[i])
-                            .unwrap(),
-                    )
-                }
+        self.span(self.height).and_then(|(start, end)| {
+            if self.height == 1 {
+                self.data.first()
+            } else {
+                let empty = end + 1 - self.len();
+                self.data.get(
+                    ((start - empty)..=(end - empty))
+                        .min_by_key(|&i| &self.data[i])
+                        .unwrap(),
+                )
             }
-        }
+        })
     }
 
     /// Removes the smallest item from the beap and returns it, or `None` if it is empty.
@@ -244,15 +242,13 @@ impl<T: Ord> Beap<T> {
     ///
     /// *O*(sqrt(*2n*)).
     pub fn pop_tail(&mut self) -> Option<T> {
-        if let Some((start, end)) = self.span(self.height) {
+        self.span(self.height).and_then(|(start, end)| {
             let empty = end + 1 - self.len();
             let idx = ((start - empty)..=(end - empty))
                 .min_by_key(|&i| &self.data[i])
                 .unwrap();
             self.remove_from_pos(idx)
-        } else {
-            None
-        }
+        })
     }
 
     /// Consumes the `Beap` and returns a vector in sorted
@@ -285,7 +281,10 @@ impl<T: Ord> Beap<T> {
 
     /// Changing the current element with its least priority parent until the beap property is restored
     fn siftup(&mut self, mut pos: usize, mut block: usize) {
-        let (mut start, _) = self.span(block).unwrap();
+        let (mut start, _) = match self.span(block) {
+            Some(idxs) => idxs,
+            None => return,
+        };
 
         while block > 1 {
             // Position of the element in the block.
@@ -325,7 +324,11 @@ impl<T: Ord> Beap<T> {
     /// Sift down in time O(sqrt(2N)).
     /// Swap the element with its largest child until the heap property is restored.
     pub(crate) fn siftdown(&mut self, mut pos: usize, mut block: usize) {
-        let (mut start, _) = self.span(block).unwrap();
+        let (mut start, _) = match self.span(block) {
+            Some(idxs) => idxs,
+            None => return,
+        };
+
         while block < self.height {
             let (next_start, _) = self.span(block + 1).unwrap();
             let level_pos = pos - start;
@@ -393,12 +396,12 @@ impl<T: Ord> Beap<T> {
     ///     and if we find ourselves in the left in the lower corner and the value in it
     ///     is not equal to val, so the desired element does not exist and it's time to return None.
     fn index(&self, val: &T) -> Option<usize> {
-        if self.is_empty() {
-            return None;
-        }
+        let (left_low, mut right_up) = match self.span(self.height) {
+            Some(idxs) => idxs,
+            None => return None, // Beap is empty.
+        };
 
         let mut block = self.height;
-        let (left_low, mut right_up) = self.span(self.height).unwrap();
 
         if right_up >= self.len() {
             block -= 1;
@@ -446,14 +449,15 @@ impl<T: Ord> Beap<T> {
     pub(crate) fn remove_from_pos(&mut self, pos: usize) -> Option<T> {
         self.data.pop().map(|mut item| {
             if !self.is_empty() {
-                let (start, _) = self.span(self.height).unwrap();
-                if start == self.data.len() {
-                    self.height -= 1;
-                }
+                if let Some((start, _)) = self.span(self.height) {
+                    if start == self.data.len() {
+                        self.height -= 1;
+                    }
 
-                if pos != self.len() {
-                    std::mem::swap(&mut item, &mut self.data[pos]);
-                    self.repair(pos);
+                    if pos != self.len() {
+                        std::mem::swap(&mut item, &mut self.data[pos]);
+                        self.repair(pos);
+                    }
                 }
             } else {
                 self.height = 0;

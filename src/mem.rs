@@ -65,6 +65,20 @@ impl<T> Beap<T> {
         self.data.capacity()
     }
 
+    /// Extracts a slice containing the underlying vector.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let b = Beap::from([1, 2]);
+    /// assert_eq!(b.as_slice(), &[2, 1]);
+    /// ```
+    #[inline]
+    pub fn as_slice(&self) -> &[T] {
+        self.data.as_slice()
+    }
+
     /// Reserves the minimum capacity for exactly `additional` more elements to be inserted in the
     /// given `Beap`. Does nothing if the capacity is already sufficient.
     ///

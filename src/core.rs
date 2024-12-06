@@ -1,5 +1,5 @@
 //! Beap logic.
-use super::Beap;
+use super::{Beap, PeekMut, TailMut};
 
 impl<T: Ord> Beap<T> {
     /// Pushes an item onto the beap.
@@ -221,6 +221,90 @@ impl<T: Ord> Beap<T> {
                 )
             }
         })
+    }
+
+    /// Returns a mutable reference to the greatest item in the beap, or
+    /// `None` if it is empty.
+    ///
+    /// Note: If the `PeekMut` value is leaked, the beap may be in an
+    /// inconsistent state.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let mut beap = Beap::new();
+    /// assert!(beap.peek_mut().is_none());
+    ///
+    /// beap.push(1);
+    /// beap.push(5);
+    /// beap.push(2);
+    /// {
+    ///     let mut val = beap.peek_mut().unwrap();
+    ///     *val = 0;
+    /// }
+    /// assert_eq!(beap.peek(), Some(&2));
+    /// ```
+    ///
+    /// # Time complexity
+    ///
+    /// If the item is modified then the worst case time complexity is *O*(sqrt(*2n*)),
+    /// otherwise it's *O*(1).
+    pub fn peek_mut(&mut self) -> Option<PeekMut<'_, T>> {
+        if self.is_empty() {
+            None
+        } else {
+            Some(PeekMut {
+                beap: self,
+                sift: false,
+            })
+        }
+    }
+
+    /// Returns a mutable reference to the smallest item in the beap, or
+    /// `None` if it is empty.
+    ///
+    /// Note: If the `TailMut` value is leaked, the beap may be in an
+    /// inconsistent state.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let mut beap = Beap::new();
+    /// assert!(beap.tail_mut().is_none());
+    ///
+    /// beap.push(1);
+    /// beap.push(5);
+    /// beap.push(2);
+    /// {
+    ///     let mut val = beap.tail_mut().unwrap();
+    ///     *val = 10;
+    /// }
+    /// assert_eq!(beap.tail(), Some(&2));
+    /// ```
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(sqrt(*2n*)),
+    pub fn tail_mut(&mut self) -> Option<TailMut<'_, T>> {
+        if let Some((start, end)) = self.span(self.height) {
+            let empty = end + 1 - self.len();
+            let idx = ((start - empty)..=(end - empty))
+                .min_by_key(|&i| &self.data[i])
+                .unwrap();
+            Some(TailMut {
+                beap: self,
+                sift: false,
+                pos: idx,
+            })
+        } else {
+            None
+        }
     }
 
     /// Removes the smallest item from the beap and returns it, or `None` if it is empty.
@@ -522,6 +606,33 @@ impl<T: Ord> Beap<T> {
     pub fn append_vec(&mut self, other: &mut Vec<T>) {
         self.data.append(other);
         self.data.sort_unstable_by(|x, y| y.cmp(x));
+    }
+}
+
+impl<T> Beap<T> {
+    /// Returns the greatest item in the beap, or `None` if it is empty.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let mut beap = Beap::new();
+    /// assert_eq!(beap.peek(), None);
+    ///
+    /// beap.push(1);
+    /// beap.push(5);
+    /// beap.push(2);
+    /// assert_eq!(beap.peek(), Some(&5));
+    /// ```
+    ///
+    /// # Time complexity
+    ///
+    /// Cost is *O*(1) in the worst case.
+    #[must_use]
+    pub fn peek(&self) -> Option<&T> {
+        self.data.first()
     }
 
     /// Start and end indexes of block b.

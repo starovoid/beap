@@ -1119,3 +1119,17 @@ fn test_into_boxed_slice() {
     assert_eq!(v, [3, 1, 2, 0]);
     assert_eq!(v.capacity(), 4);
 }
+
+#[test]
+fn test_try_reserve() {
+    let mut b = Beap::from([1, 2, 3]);
+    assert!(b.try_reserve(50).is_ok());
+    assert!(b.capacity() >= 53);
+}
+
+#[test]
+fn test_try_reserve_exact() {
+    let mut b = Beap::from([1, 2, 3]);
+    assert!(b.try_reserve_exact(50).is_ok());
+    assert!(b.capacity() >= 53);
+}

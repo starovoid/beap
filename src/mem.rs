@@ -1,5 +1,6 @@
 //! Memory management.
 use super::Beap;
+use std::collections::TryReserveError;
 
 impl<T> Beap<T> {
     /// Creates an empty `Beap` as a max-beap.
@@ -59,8 +60,23 @@ impl<T> Beap<T> {
     /// beap.push(4);
     /// ```
     #[must_use]
+    #[inline]
     pub fn capacity(&self) -> usize {
         self.data.capacity()
+    }
+
+    /// Extracts a slice containing the underlying vector.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let b = Beap::from([1, 2]);
+    /// assert_eq!(b.as_slice(), &[2, 1]);
+    /// ```
+    #[inline]
+    pub fn as_slice(&self) -> &[T] {
+        self.data.as_slice()
     }
 
     /// Reserves the minimum capacity for exactly `additional` more elements to be inserted in the
@@ -87,6 +103,7 @@ impl<T> Beap<T> {
     /// ```
     ///
     /// [`reserve`]: Beap::reserve
+    #[inline]
     pub fn reserve_exact(&mut self, additional: usize) {
         self.data.reserve_exact(additional);
     }
@@ -109,6 +126,7 @@ impl<T> Beap<T> {
     /// assert!(beap.capacity() >= 100);
     /// beap.push(4);
     /// ```
+    #[inline]
     pub fn reserve(&mut self, additional: usize) {
         self.data.reserve(additional);
     }
@@ -127,6 +145,7 @@ impl<T> Beap<T> {
     /// beap.shrink_to_fit();
     /// assert!(beap.capacity() == 0);
     /// ```
+    #[inline]
     pub fn shrink_to_fit(&mut self) {
         self.data.shrink_to_fit();
     }
@@ -188,6 +207,7 @@ impl<T> Beap<T> {
     /// assert_eq!(beap.len(), 2);
     /// ```
     #[must_use]
+    #[inline]
     pub fn len(&self) -> usize {
         self.data.len()
     }
@@ -211,6 +231,7 @@ impl<T> Beap<T> {
     /// assert!(!beap.is_empty());
     /// ```
     #[must_use]
+    #[inline]
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
@@ -231,8 +252,148 @@ impl<T> Beap<T> {
     ///
     /// assert!(beap.is_empty());
     /// ```
+    #[inline]
     pub fn clear(&mut self) {
         self.drain();
+    }
+
+    /// Consumes and leaks the `Vec`, returning a mutable reference to the contents, `&'a mut [T]`.
+    ///
+    /// This calls [Vec::leak], accordingly, there are all lifetime restrictions.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let mut x = Beap::from([1usize, 2, 3]);
+    ///
+    /// let static_ref: &'static mut [usize] = x.leak();
+    /// assert_eq!(static_ref, &[3, 2, 1]);
+    ///
+    /// static_ref[0] += 1;
+    /// assert_eq!(static_ref, &[4, 2, 1]);
+    ///
+    /// // Manually free it later.
+    /// unsafe {
+    ///     let _b = Box::from_raw(static_ref as *mut [usize]);
+    /// }
+    /// ```
+    #[inline]
+    pub fn leak<'a>(self) -> &'a mut [T] {
+        self.data.leak()
+    }
+
+    /// Converts the beap into `Box<[T]>`.
+    ///
+    /// It just calls [`Vec::into_boxed_slice`] on underlying `Vec`.
+    /// Before doing the conversion, this method discards excess capacity like [`shrink_to_fit`].
+    ///
+    /// [`shrink_to_fit`]: Beap::shrink_to_fit
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let b = Beap::from([1, 2, 3]);
+    /// let slice = b.into_boxed_slice();
+    /// ```
+    ///
+    /// Any excess capacity is removed:
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let mut b = Vec::with_capacity(10);
+    /// b.extend([1, 2, 3]);
+    ///
+    /// assert!(b.capacity() >= 10);
+    /// let slice = b.into_boxed_slice();
+    /// assert_eq!(slice.into_vec().capacity(), 3);
+    /// ```
+    #[inline]
+    pub fn into_boxed_slice(self) -> Box<[T]> {
+        self.data.into_boxed_slice()
+    }
+
+    /// Tries to reserve capacity for at least `additional` more elements to be inserted
+    /// in the underlying `Vec<T>`. The underlying `Vec` may reserve more space to speculatively avoid
+    /// frequent reallocations. After calling `try_reserve`, capacity will be
+    /// greater than or equal to `self.len() + additional` if it returns
+    /// `Ok(())`. Does nothing if capacity is already sufficient. This method
+    /// preserves the contents even if an error occurs.
+    ///
+    /// # Errors
+    ///
+    /// If the capacity overflows, or the allocator reports a failure, then an error
+    /// is returned.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// use std::collections::TryReserveError;
+    ///
+    /// fn process_data(data: &[u32]) -> Result<Beap<u32>, TryReserveError> {
+    ///     let mut output = Beap::new();
+    ///
+    ///     // Pre-reserve the memory, exiting if we can't
+    ///     output.try_reserve(data.len())?;
+    ///
+    ///     // Now we know this can't OOM in the middle of our complex work
+    ///     output.extend(data.iter().map(|&val| {
+    ///         val * 2 + 5 // very complicated
+    ///     }));
+    ///
+    ///     Ok(output)
+    /// }
+    /// process_data(&[1, 2, 3]).expect("why is the test harness OOMing on 12 bytes?");
+    /// ```
+    #[inline]
+    pub fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> {
+        self.data.try_reserve(additional)
+    }
+
+    /// Tries to reserve the minimum capacity for at least `additional`
+    /// elements to be inserted in the underlying `Vec<T>`. Unlike [`try_reserve`],
+    /// this will not deliberately over-allocate to speculatively avoid frequent
+    /// allocations. After calling `try_reserve_exact`, capacity will be greater
+    /// than or equal to `self.len() + additional` if it returns `Ok(())`.
+    /// Does nothing if the capacity is already sufficient.
+    ///
+    /// Note that the allocator may give the collection more space than it
+    /// requests. Therefore, capacity can not be relied upon to be precisely
+    /// minimal. Prefer [`try_reserve`] if future insertions are expected.
+    ///
+    /// [`try_reserve`]: Beap::try_reserve
+    ///
+    /// # Errors
+    ///
+    /// If the capacity overflows, or the allocator reports a failure, then an error
+    /// is returned.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// use std::collections::TryReserveError;
+    ///
+    /// fn process_data(data: &[u32]) -> Result<Beap<u32>, TryReserveError> {
+    ///     let mut output = Beap::new();
+    ///
+    ///     // Pre-reserve the memory, exiting if we can't
+    ///     output.try_reserve_exact(data.len())?;
+    ///
+    ///     // Now we know this can't OOM in the middle of our complex work
+    ///     output.extend(data.iter().map(|&val| {
+    ///         val * 2 + 5 // very complicated
+    ///     }));
+    ///
+    ///     Ok(output)
+    /// }
+    /// process_data(&[1, 2, 3]).expect("why is the test harness OOMing on 12 bytes?");
+    /// ```
+    #[inline]
+    pub fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> {
+        self.data.try_reserve_exact(additional)
     }
 }
 

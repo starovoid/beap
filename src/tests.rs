@@ -1091,3 +1091,45 @@ fn test_into_iter_ref() {
     // Last
     assert_eq!(iter.last(), Some(&3));
 }
+
+#[test]
+fn test_leak() {
+    let x = Beap::from([1u32, 2u32, 3u32]);
+
+    let data_ref: &'static mut [u32] = x.leak();
+    assert_eq!(data_ref, &[3, 2, 1]);
+
+    data_ref[0] += 1;
+    assert_eq!(data_ref, &[4, 2, 1]);
+
+    // Manually free it later.
+    unsafe {
+        let _b = Box::from_raw(data_ref as *mut [u32]);
+    }
+}
+
+#[test]
+fn test_into_boxed_slice() {
+    let mut b = Beap::with_capacity(100);
+    b.extend([1, 2, 3, 0]);
+
+    let slice = b.into_boxed_slice();
+    let v = slice.into_vec();
+
+    assert_eq!(v, [3, 1, 2, 0]);
+    assert_eq!(v.capacity(), 4);
+}
+
+#[test]
+fn test_try_reserve() {
+    let mut b = Beap::from([1, 2, 3]);
+    assert!(b.try_reserve(50).is_ok());
+    assert!(b.capacity() >= 53);
+}
+
+#[test]
+fn test_try_reserve_exact() {
+    let mut b = Beap::from([1, 2, 3]);
+    assert!(b.try_reserve_exact(50).is_ok());
+    assert!(b.capacity() >= 53);
+}

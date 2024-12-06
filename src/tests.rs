@@ -1091,3 +1091,19 @@ fn test_into_iter_ref() {
     // Last
     assert_eq!(iter.last(), Some(&3));
 }
+
+#[test]
+fn test_leak() {
+    let x = Beap::from([1u32, 2u32, 3u32]);
+
+    let data_ref: &'static mut [u32] = x.leak();
+    assert_eq!(data_ref, &[3, 2, 1]);
+
+    data_ref[0] += 1;
+    assert_eq!(data_ref, &[4, 2, 1]);
+
+    // Manually free it later.
+    unsafe {
+        let _b = Box::from_raw(data_ref as *mut [u32]);
+    }
+}

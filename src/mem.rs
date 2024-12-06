@@ -234,6 +234,31 @@ impl<T> Beap<T> {
     pub fn clear(&mut self) {
         self.drain();
     }
+
+    /// Consumes and leaks the `Vec`, returning a mutable reference to the contents, `&'a mut [T]`.
+    ///
+    /// This calls [Vec::leak], accordingly, there are all lifetime restrictions.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let mut x = Beap::from([1usize, 2, 3]);
+    ///
+    /// let static_ref: &'static mut [usize] = x.leak();
+    /// assert_eq!(static_ref, &[3, 2, 1]);
+    ///
+    /// static_ref[0] += 1;
+    /// assert_eq!(static_ref, &[4, 2, 1]);
+    ///
+    /// // Manually free it later.
+    /// unsafe {
+    ///     let _b = Box::from_raw(static_ref as *mut [usize]);
+    /// }
+    /// ```
+    pub fn leak<'a>(self) -> &'a mut [T] {
+        self.data.leak()
+    }
 }
 
 impl<T: Ord> From<Vec<T>> for Beap<T> {

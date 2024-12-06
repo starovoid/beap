@@ -1107,3 +1107,15 @@ fn test_leak() {
         let _b = Box::from_raw(data_ref as *mut [u32]);
     }
 }
+
+#[test]
+fn test_into_boxed_slice() {
+    let mut b = Beap::with_capacity(100);
+    b.extend([1, 2, 3, 0]);
+
+    let slice = b.into_boxed_slice();
+    let v = slice.into_vec();
+
+    assert_eq!(v, [3, 1, 2, 0]);
+    assert_eq!(v.capacity(), 4);
+}

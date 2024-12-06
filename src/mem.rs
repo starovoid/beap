@@ -259,6 +259,37 @@ impl<T> Beap<T> {
     pub fn leak<'a>(self) -> &'a mut [T] {
         self.data.leak()
     }
+
+    /// Converts the beap into `Box<[T]>`.
+    ///
+    /// It just calls [`Vec::into_boxed_slice`] on underlying `Vec`.
+    /// Before doing the conversion, this method discards excess capacity like [`shrink_to_fit`].
+    ///
+    /// [`shrink_to_fit`]: Beap::shrink_to_fit
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let b = Beap::from([1, 2, 3]);
+    /// let slice = b.into_boxed_slice();
+    /// ```
+    ///
+    /// Any excess capacity is removed:
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let mut b = Vec::with_capacity(10);
+    /// b.extend([1, 2, 3]);
+    ///
+    /// assert!(b.capacity() >= 10);
+    /// let slice = b.into_boxed_slice();
+    /// assert_eq!(slice.into_vec().capacity(), 3);
+    /// ```
+    #[inline]
+    pub fn into_boxed_slice(self) -> Box<[T]> {
+        self.data.into_boxed_slice()
+    }
 }
 
 impl<T: Ord> From<Vec<T>> for Beap<T> {

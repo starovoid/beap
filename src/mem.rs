@@ -59,6 +59,7 @@ impl<T> Beap<T> {
     /// beap.push(4);
     /// ```
     #[must_use]
+    #[inline]
     pub fn capacity(&self) -> usize {
         self.data.capacity()
     }
@@ -87,6 +88,7 @@ impl<T> Beap<T> {
     /// ```
     ///
     /// [`reserve`]: Beap::reserve
+    #[inline]
     pub fn reserve_exact(&mut self, additional: usize) {
         self.data.reserve_exact(additional);
     }
@@ -109,6 +111,7 @@ impl<T> Beap<T> {
     /// assert!(beap.capacity() >= 100);
     /// beap.push(4);
     /// ```
+    #[inline]
     pub fn reserve(&mut self, additional: usize) {
         self.data.reserve(additional);
     }
@@ -127,6 +130,7 @@ impl<T> Beap<T> {
     /// beap.shrink_to_fit();
     /// assert!(beap.capacity() == 0);
     /// ```
+    #[inline]
     pub fn shrink_to_fit(&mut self) {
         self.data.shrink_to_fit();
     }
@@ -188,6 +192,7 @@ impl<T> Beap<T> {
     /// assert_eq!(beap.len(), 2);
     /// ```
     #[must_use]
+    #[inline]
     pub fn len(&self) -> usize {
         self.data.len()
     }
@@ -211,6 +216,7 @@ impl<T> Beap<T> {
     /// assert!(!beap.is_empty());
     /// ```
     #[must_use]
+    #[inline]
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
@@ -231,6 +237,7 @@ impl<T> Beap<T> {
     ///
     /// assert!(beap.is_empty());
     /// ```
+    #[inline]
     pub fn clear(&mut self) {
         self.drain();
     }
@@ -256,6 +263,7 @@ impl<T> Beap<T> {
     ///     let _b = Box::from_raw(static_ref as *mut [usize]);
     /// }
     /// ```
+    #[inline]
     pub fn leak<'a>(self) -> &'a mut [T] {
         self.data.leak()
     }

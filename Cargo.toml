@@ -1,6 +1,6 @@
 [package]
 name = "beap"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["starovoid"]
 license = "MIT"
 edition = "2021"

@@ -1133,3 +1133,18 @@ fn test_try_reserve_exact() {
     assert!(b.try_reserve_exact(50).is_ok());
     assert!(b.capacity() >= 53);
 }
+
+#[test]
+fn test_index() {
+    let mut b = Beap::<i32>::new();
+    assert_eq!(b.index(&42), None);
+    b.push(42);
+    assert_eq!(b.index(&42), Some(0));
+    b.extend([1, 2, 3]);
+    assert_eq!(b.index(&42), Some(0));
+    assert_eq!(b.index(&1), Some(3));
+    b.push(100);
+    assert_eq!(b.index(&1), Some(3));
+    assert_eq!(b.index(&2), Some(4));
+    assert_eq!(b.index(&42), Some(2));
+}

@@ -449,20 +449,28 @@ impl<T: Ord> Beap<T> {
         }
     }
 
-    /// Given the val value, find the index of an element with such a value
-    /// or return None if such an element does not exist.
-    /// Time complexity: O(sqrt(2n)).
+    /// Find the index of an element with given value
+    /// or return `None` if such element does not exist.
     ///
-    /// Let there be Beap        9
-    ///                        8   7
-    ///                      6   5   4
-    ///                    3   2   1   0
+    /// Time complexity: *O(sqrt(2n))*.
+    ///
+    /// # Algorithm
+    ///
+    /// Let there be `Beap`
+    /// ```
+    /// //         9
+    /// //       8   7
+    /// //     6   5   4
+    /// //   3   2   1   0
+    /// ```
     ///
     /// Consider it as the upper left corner of the matrix:
-    /// 9 7 4 0
-    /// 8 5 1
-    /// 6 2
-    /// 3
+    /// ```
+    /// //   9 7 4 0
+    /// //   8 5 1
+    /// //   6 2
+    /// //   3
+    /// ```
     ///
     /// Let's start the search from the upper-right corner
     /// (the last element of the inner vector).
@@ -479,7 +487,19 @@ impl<T: Ord> Beap<T> {
     /// 4) As soon as we find an element with equal val priority, we return its index,
     ///     and if we find ourselves in the left in the lower corner and the value in it
     ///     is not equal to val, so the desired element does not exist and it's time to return None.
-    fn index(&self, val: &T) -> Option<usize> {
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use beap::Beap;
+    ///
+    /// let b = Beap::<i32>::from([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    /// assert_eq!(b.index(&9), Some(0));
+    /// assert_eq!(b.index(&4), Some(5));
+    /// assert_eq!(b.index(&1), Some(8));
+    /// assert_eq!(b.index(&999), None);
+    /// ```
+    pub fn index(&self, val: &T) -> Option<usize> {
         let (left_low, mut right_up) = match self.span(self.height) {
             Some(idxs) => idxs,
             None => return None, // Beap is empty.

@@ -681,6 +681,28 @@ impl<T> Beap<T> {
         self.data.first()
     }
 
+    /// Get an item at the specified position.
+    ///
+    /// Returns `None` if the `pos` goes beyond the beap.
+    ///
+    /// # Time complexity
+    ///
+    /// Cost is *O*(1) in the worst case.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use beap::Beap;
+    ///
+    /// let b = Beap::from([1, 3, 2, 4]);
+    /// assert_eq!(b.get(0), Some(&4));
+    /// assert_eq!(b.get(3), Some(&1));
+    /// assert_eq!(b.get(100), None);
+    /// ```
+    pub fn get(&self, pos: usize) -> Option<&T> {
+        self.data.get(pos)
+    }
+
     /// Start and end indexes of block b.
     /// Returns `None` if the block is empty.
     pub(crate) fn span(&self, b: usize) -> Option<(usize, usize)> {

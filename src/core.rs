@@ -1,4 +1,6 @@
 //! Beap logic.
+use crate::PosMut;
+
 use super::{Beap, PeekMut, TailMut};
 
 impl<T: Ord> Beap<T> {
@@ -301,6 +303,50 @@ impl<T: Ord> Beap<T> {
                 beap: self,
                 sift: false,
                 pos: idx,
+            })
+        } else {
+            None
+        }
+    }
+
+    /// Returns a mutable reference to the item with given position, or
+    /// `None` if the position is out of bounds.
+    ///
+    /// Note: If the `PosMut` value is leaked, the beap may be in an
+    /// inconsistent state.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let mut beap = Beap::new();
+    /// assert!(beap.get_mut(0).is_none());
+    ///
+    /// beap.push(1);
+    /// beap.push(5);
+    /// beap.push(2);
+    /// beap.push(3);
+    /// beap.push(0);
+    /// {
+    ///     let mut val = beap.get_mut(3).unwrap();
+    ///     assert_eq!(*val, 1);
+    ///     *val = 10;
+    /// }
+    /// assert_eq!(beap.peek(), Some(&10));
+    /// assert!(beap.get_mut(100).is_none());
+    /// ```
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(sqrt(*2n*)),
+    pub fn get_mut(&mut self, pos: usize) -> Option<PosMut<'_, T>> {
+        if pos < self.data.len() {
+            Some(PosMut {
+                beap: self,
+                sift: false,
+                pos,
             })
         } else {
             None

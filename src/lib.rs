@@ -237,7 +237,7 @@ impl<T: Ord> DerefMut for TailMut<'_, T> {
 impl<'a, T: Ord> TailMut<'a, T> {
     /// Removes the peeked value from the beap and returns it.
     pub fn pop(mut this: TailMut<'a, T>) -> T {
-        let value = this.beap.remove_from_pos(this.pos).unwrap();
+        let value = this.beap.remove_index(this.pos).unwrap();
         this.sift = false;
         value
     }

@@ -1148,3 +1148,14 @@ fn test_index() {
     assert_eq!(b.index(&2), Some(4));
     assert_eq!(b.index(&42), Some(2));
 }
+
+#[test]
+fn test_remove_from_pos() {
+    let mut b = Beap::from([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+    assert_eq!(b.remove_index(8), Some(1));
+    let idx4 = b.index(&4).unwrap();
+    assert_eq!(b.remove_index(idx4), Some(4));
+    assert_eq!(b.remove_index(100), None);
+    assert_eq!(b.remove_index(0), Some(9));
+}

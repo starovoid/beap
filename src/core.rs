@@ -147,7 +147,7 @@ impl<T: Ord> Beap<T> {
     pub fn remove(&mut self, val: &T) -> bool {
         match self.index(val) {
             Some(idx) => {
-                self.remove_from_pos(idx);
+                self.remove_index(idx);
                 true
             }
             None => false,
@@ -331,7 +331,7 @@ impl<T: Ord> Beap<T> {
             let idx = ((start - empty)..=(end - empty))
                 .min_by_key(|&i| &self.data[i])
                 .unwrap();
-            self.remove_from_pos(idx)
+            self.remove_index(idx)
         })
     }
 
@@ -457,19 +457,19 @@ impl<T: Ord> Beap<T> {
     /// # Algorithm
     ///
     /// Let there be `Beap`
-    /// ```
-    /// //         9
-    /// //       8   7
-    /// //     6   5   4
-    /// //   3   2   1   0
+    /// ```text
+    ///          9
+    ///        8   7
+    ///      6   5   4
+    ///    3   2   1   0
     /// ```
     ///
     /// Consider it as the upper left corner of the matrix:
-    /// ```
-    /// //   9 7 4 0
-    /// //   8 5 1
-    /// //   6 2
-    /// //   3
+    /// ```text
+    ///    9 7 4 0
+    ///    8 5 1
+    ///    6 2
+    ///    3
     /// ```
     ///
     /// Let's start the search from the upper-right corner
@@ -549,8 +549,34 @@ impl<T: Ord> Beap<T> {
         }
     }
 
-    // Removing an item in the specified position.
-    pub(crate) fn remove_from_pos(&mut self, pos: usize) -> Option<T> {
+    /// Remove an element at the specified position.
+    ///
+    /// If the passed index is greater than the max index of the beap, it returns `None`.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(sqrt(*2n*))
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use beap::Beap;
+    ///
+    /// let mut b = Beap::from([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    /// assert_eq!(b.remove_index(7), Some(2));
+    /// assert_eq!(b.remove_index(0), Some(9));
+    ///
+    /// let idx4 = b.index(&4).unwrap();
+    /// assert_eq!(b.remove_index(idx4), Some(4));
+    ///
+    /// assert_eq!(b.remove_index(100), None);
+    ///
+    /// ```
+    pub fn remove_index(&mut self, pos: usize) -> Option<T> {
+        if pos > self.data.len() {
+            return None;
+        }
+
         self.data.pop().map(|mut item| {
             if !self.is_empty() {
                 if let Some((start, _)) = self.span(self.height) {

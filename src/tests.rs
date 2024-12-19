@@ -1,4 +1,4 @@
-use crate::{Beap, PeekMut, TailMut};
+use crate::{Beap, PeekMut, PosMut, TailMut};
 use rand::{thread_rng, Rng};
 use std::cmp::Reverse;
 use std::collections::binary_heap;
@@ -1132,4 +1132,67 @@ fn test_try_reserve_exact() {
     let mut b = Beap::from([1, 2, 3]);
     assert!(b.try_reserve_exact(50).is_ok());
     assert!(b.capacity() >= 53);
+}
+
+#[test]
+fn test_index() {
+    let mut b = Beap::<i32>::new();
+    assert_eq!(b.index(&42), None);
+    b.push(42);
+    assert_eq!(b.index(&42), Some(0));
+    b.extend([1, 2, 3]);
+    assert_eq!(b.index(&42), Some(0));
+    assert_eq!(b.index(&1), Some(3));
+    b.push(100);
+    assert_eq!(b.index(&1), Some(3));
+    assert_eq!(b.index(&2), Some(4));
+    assert_eq!(b.index(&42), Some(2));
+}
+
+#[test]
+fn test_remove_from_pos() {
+    let mut b = Beap::from([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+    assert_eq!(b.remove_index(8), Some(1));
+    let idx4 = b.index(&4).unwrap();
+    assert_eq!(b.remove_index(idx4), Some(4));
+    assert_eq!(b.remove_index(100), None);
+    assert_eq!(b.remove_index(0), Some(9));
+}
+
+#[test]
+fn test_get_mut() {
+    let mut beap: Beap<i32> = Beap::new();
+    assert!(beap.get_mut(0).is_none());
+
+    beap.push(3);
+    {
+        let mut top = beap.get_mut(0).unwrap();
+        *top = 4;
+    }
+    assert_eq!(beap.get(0), Some(&4));
+
+    beap.push(1);
+    beap.push(6);
+    assert_eq!(beap.get(1), Some(&1));
+    {
+        let mut x = beap.get_mut(1).unwrap();
+        *x = 0;
+    }
+    assert_eq!(beap.get(1), Some(&0));
+
+    {
+        let mut x = beap.get_mut(1).unwrap();
+        *x = 10;
+    }
+    assert_eq!(beap.peek(), Some(&10));
+    assert_eq!(beap.get(1), Some(&6));
+
+    println!("{:?}", beap.clone().into_vec());
+    {
+        let pos = beap.get_mut(1).unwrap();
+        println!("{:?}", pos);
+        assert_eq!(PosMut::remove(pos), 6);
+    }
+    assert_eq!(beap.tail(), Some(&4));
 }

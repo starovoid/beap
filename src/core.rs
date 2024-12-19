@@ -1,4 +1,6 @@
 //! Beap logic.
+use crate::PosMut;
+
 use super::{Beap, PeekMut, TailMut};
 
 impl<T: Ord> Beap<T> {
@@ -147,7 +149,7 @@ impl<T: Ord> Beap<T> {
     pub fn remove(&mut self, val: &T) -> bool {
         match self.index(val) {
             Some(idx) => {
-                self.remove_from_pos(idx);
+                self.remove_index(idx);
                 true
             }
             None => false,
@@ -307,6 +309,50 @@ impl<T: Ord> Beap<T> {
         }
     }
 
+    /// Returns a mutable reference to the item with given position, or
+    /// `None` if the position is out of bounds.
+    ///
+    /// Note: If the `PosMut` value is leaked, the beap may be in an
+    /// inconsistent state.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use beap::Beap;
+    /// let mut beap = Beap::new();
+    /// assert!(beap.get_mut(0).is_none());
+    ///
+    /// beap.push(1);
+    /// beap.push(5);
+    /// beap.push(2);
+    /// beap.push(3);
+    /// beap.push(0);
+    /// {
+    ///     let mut val = beap.get_mut(3).unwrap();
+    ///     assert_eq!(*val, 1);
+    ///     *val = 10;
+    /// }
+    /// assert_eq!(beap.peek(), Some(&10));
+    /// assert!(beap.get_mut(100).is_none());
+    /// ```
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(sqrt(*2n*)),
+    pub fn get_mut(&mut self, pos: usize) -> Option<PosMut<'_, T>> {
+        if pos < self.data.len() {
+            Some(PosMut {
+                beap: self,
+                sift: false,
+                pos,
+            })
+        } else {
+            None
+        }
+    }
+
     /// Removes the smallest item from the beap and returns it, or `None` if it is empty.
     ///
     /// # Examples
@@ -331,7 +377,7 @@ impl<T: Ord> Beap<T> {
             let idx = ((start - empty)..=(end - empty))
                 .min_by_key(|&i| &self.data[i])
                 .unwrap();
-            self.remove_from_pos(idx)
+            self.remove_index(idx)
         })
     }
 
@@ -449,20 +495,28 @@ impl<T: Ord> Beap<T> {
         }
     }
 
-    /// Given the val value, find the index of an element with such a value
-    /// or return None if such an element does not exist.
-    /// Time complexity: O(sqrt(2n)).
+    /// Find the index of an element with given value
+    /// or return `None` if such element does not exist.
     ///
-    /// Let there be Beap        9
-    ///                        8   7
-    ///                      6   5   4
-    ///                    3   2   1   0
+    /// Time complexity: *O(sqrt(2n))*.
+    ///
+    /// # Algorithm
+    ///
+    /// Let there be `Beap`
+    /// ```text
+    ///          9
+    ///        8   7
+    ///      6   5   4
+    ///    3   2   1   0
+    /// ```
     ///
     /// Consider it as the upper left corner of the matrix:
-    /// 9 7 4 0
-    /// 8 5 1
-    /// 6 2
-    /// 3
+    /// ```text
+    ///    9 7 4 0
+    ///    8 5 1
+    ///    6 2
+    ///    3
+    /// ```
     ///
     /// Let's start the search from the upper-right corner
     /// (the last element of the inner vector).
@@ -479,7 +533,19 @@ impl<T: Ord> Beap<T> {
     /// 4) As soon as we find an element with equal val priority, we return its index,
     ///     and if we find ourselves in the left in the lower corner and the value in it
     ///     is not equal to val, so the desired element does not exist and it's time to return None.
-    fn index(&self, val: &T) -> Option<usize> {
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use beap::Beap;
+    ///
+    /// let b = Beap::<i32>::from([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    /// assert_eq!(b.index(&9), Some(0));
+    /// assert_eq!(b.index(&4), Some(5));
+    /// assert_eq!(b.index(&1), Some(8));
+    /// assert_eq!(b.index(&999), None);
+    /// ```
+    pub fn index(&self, val: &T) -> Option<usize> {
         let (left_low, mut right_up) = match self.span(self.height) {
             Some(idxs) => idxs,
             None => return None, // Beap is empty.
@@ -529,8 +595,34 @@ impl<T: Ord> Beap<T> {
         }
     }
 
-    // Removing an item in the specified position.
-    pub(crate) fn remove_from_pos(&mut self, pos: usize) -> Option<T> {
+    /// Remove an element at the specified position.
+    ///
+    /// If the passed index is greater than the max index of the beap, it returns `None`.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(sqrt(*2n*))
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use beap::Beap;
+    ///
+    /// let mut b = Beap::from([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    /// assert_eq!(b.remove_index(7), Some(2));
+    /// assert_eq!(b.remove_index(0), Some(9));
+    ///
+    /// let idx4 = b.index(&4).unwrap();
+    /// assert_eq!(b.remove_index(idx4), Some(4));
+    ///
+    /// assert_eq!(b.remove_index(100), None);
+    ///
+    /// ```
+    pub fn remove_index(&mut self, pos: usize) -> Option<T> {
+        if pos > self.data.len() {
+            return None;
+        }
+
         self.data.pop().map(|mut item| {
             if !self.is_empty() {
                 if let Some((start, _)) = self.span(self.height) {
@@ -633,6 +725,28 @@ impl<T> Beap<T> {
     #[must_use]
     pub fn peek(&self) -> Option<&T> {
         self.data.first()
+    }
+
+    /// Get an item at the specified position.
+    ///
+    /// Returns `None` if the `pos` goes beyond the beap.
+    ///
+    /// # Time complexity
+    ///
+    /// Cost is *O*(1) in the worst case.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use beap::Beap;
+    ///
+    /// let b = Beap::from([1, 3, 2, 4]);
+    /// assert_eq!(b.get(0), Some(&4));
+    /// assert_eq!(b.get(3), Some(&1));
+    /// assert_eq!(b.get(100), None);
+    /// ```
+    pub fn get(&self, pos: usize) -> Option<&T> {
+        self.data.get(pos)
     }
 
     /// Start and end indexes of block b.

@@ -237,8 +237,59 @@ impl<T: Ord> DerefMut for TailMut<'_, T> {
 impl<'a, T: Ord> TailMut<'a, T> {
     /// Removes the peeked value from the beap and returns it.
     pub fn pop(mut this: TailMut<'a, T>) -> T {
-        let value = this.beap.remove_from_pos(this.pos).unwrap();
+        let value = this.beap.remove_index(this.pos).unwrap();
         this.sift = false;
+        value
+    }
+}
+
+/// Structure wrapping a mutable reference to the item with provided index on a `Beap`.
+///
+/// This `struct` is created by the [`get_mut`] method on [`Beap`]. See
+/// its documentation for more.
+///
+/// [`get_mut`]: Beap::get_mut
+pub struct PosMut<'a, T: 'a + Ord> {
+    beap: &'a mut Beap<T>,
+    sift: bool,
+    pos: usize,
+}
+
+impl<T: Ord + fmt::Debug> fmt::Debug for PosMut<'_, T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_tuple("PosMut")
+            .field(&self.beap.data[self.pos])
+            .finish()
+    }
+}
+
+impl<T: Ord> Drop for PosMut<'_, T> {
+    fn drop(&mut self) {
+        if self.sift {
+            self.beap.repair(self.pos);
+        }
+    }
+}
+
+impl<T: Ord> Deref for PosMut<'_, T> {
+    type Target = T;
+    fn deref(&self) -> &T {
+        self.beap.data.get(self.pos).unwrap()
+    }
+}
+
+impl<T: Ord> DerefMut for PosMut<'_, T> {
+    fn deref_mut(&mut self) -> &mut T {
+        self.sift = true;
+        self.beap.data.get_mut(self.pos).unwrap()
+    }
+}
+
+impl<'a, T: Ord> PosMut<'a, T> {
+    /// Removes the borrowed value from the beap and returns it.
+    pub fn remove(mut this: PosMut<'a, T>) -> T {
+        let value = this.beap.remove_index(this.pos).unwrap();
+        this.sift = true;
         value
     }
 }

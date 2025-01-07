@@ -111,5 +111,24 @@ let beap = Beap::from([5, 3, 1, 7]);
 assert_eq!(beap.into_sorted_vec(), vec![1, 3, 5, 7]);
 ```
 
+## Benchmarks
+The charts below shows the results of `Beap<i64>` vs `BinaryHeap<i64>` vs `BTreeSet<i64>` benches.
+
+5 scenarios were tested:
+1. Sequential `push` calls
+2. Sequential `push` + `peek` calls
+3. Sequential `push` + `tail` (search for min) calls
+4. Call `contains` for each value in the collection
+5. Sequential `pop` calls
+
+each with `100`, `1000` and `10000` elements.
+
+![100 items](assets/100_items.png)
+![1000 items](assets/1000_items.png)
+![10000 items](assets/10000_items.png)
+
+To summarize, in some usage scenarios, `Beap` may be preferable, 
+but most often it is worth choosing `BinaryHeap` or `BTreeSet` depending on the task.
+
 #
 If you have any comments or suggestions, or you suddenly found an error, please start a new issue or pool request.

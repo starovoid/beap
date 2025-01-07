@@ -123,9 +123,9 @@ The charts below shows the results of `Beap<i64>` vs `BinaryHeap<i64>` vs `BTree
 
 each with `100`, `1000` and `10000` elements.
 
-![100 items](assets/100_items.ppm)
-![1000 items](assets/1000_items.ppm)
-![10000 items](assets/10000_items.ppm)
+![100 items](assets/100_items.png)
+![1000 items](assets/1000_items.png)
+![10000 items](assets/10000_items.png)
 
 To summarize, in some usage scenarios, `Beap` may be preferable, 
 but most often it is worth choosing `BinaryHeap` or `BTreeSet` depending on the task.

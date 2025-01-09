@@ -292,7 +292,7 @@ impl<T: Ord> Beap<T> {
     ///
     /// # Time complexity
     ///
-    /// *O*(sqrt(*2n*)),
+    /// *O*(sqrt(*2n*))
     pub fn tail_mut(&mut self) -> Option<TailMut<'_, T>> {
         if let Some((start, end)) = self.span(self.height) {
             let empty = end + 1 - self.len();
@@ -340,7 +340,7 @@ impl<T: Ord> Beap<T> {
     ///
     /// # Time complexity
     ///
-    /// *O*(sqrt(*2n*)),
+    /// *O*(sqrt(*2n*)) to restore the heap property if the item has been changed.
     pub fn get_mut(&mut self, pos: usize) -> Option<PosMut<'_, T>> {
         if pos < self.data.len() {
             Some(PosMut {
@@ -372,13 +372,14 @@ impl<T: Ord> Beap<T> {
     ///
     /// *O*(sqrt(*2n*)).
     pub fn pop_tail(&mut self) -> Option<T> {
-        self.span(self.height).and_then(|(start, end)| {
-            let empty = end + 1 - self.len();
-            let idx = ((start - empty)..=(end - empty))
-                .min_by_key(|&i| &self.data[i])
-                .unwrap();
-            self.remove_index(idx)
-        })
+        self.span(self.height)
+            .and_then(|(start, end)| {
+                let empty = end + 1 - self.len();
+                ((start - empty)..=(end - empty))
+                    .min_by_key(|&i| &self.data[i])
+                    .map(|idx| self.remove_index(idx))
+            })
+            .flatten()
     }
 
     /// Consumes the `Beap` and returns a vector in sorted
@@ -545,12 +546,12 @@ impl<T: Ord> Beap<T> {
     /// assert_eq!(b.index(&1), Some(8));
     /// assert_eq!(b.index(&999), None);
     /// ```
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(sqrt(*2n*))
     pub fn index(&self, val: &T) -> Option<usize> {
-        let (left_low, mut right_up) = match self.span(self.height) {
-            Some(idxs) => idxs,
-            None => return None, // Beap is empty.
-        };
-
+        let (left_low, mut right_up) = self.span(self.height)?;
         let mut block = self.height;
 
         if right_up >= self.len() {

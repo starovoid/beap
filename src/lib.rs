@@ -87,7 +87,7 @@ use std::ops::{Deref, DerefMut};
 ///
 /// ## Min-heap
 ///
-/// Either [`core::cmp::Reverse`] or a custom [`Ord`] implementation can be used to
+/// Either [`std::cmp::Reverse`] or a custom [`Ord`] implementation can be used to
 /// make `Beap` a min-heap. This makes `beap.pop()` return the smallest
 /// value instead of the greatest one.
 ///

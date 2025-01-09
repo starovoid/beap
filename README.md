@@ -68,6 +68,18 @@ assert_eq!(beap.peek(), Some(&5));
 // We can check the length of a beap.
 assert_eq!(beap.len(), 3);
 
+// You can check if an item is contained in the beap.
+assert!(beap.contains(&2));
+
+// Or get mutable access to it:
+let idx = beap.index(&2).unwrap();
+{
+    let mut val = beap.get_mut(idx).unwrap();
+    assert_eq!(*val, 2);
+    *val = 20;
+}
+assert_eq!(beap.peek(), Some(&20));
+
 // We can iterate over the items in the beap, although they are returned in
 // a random order.
 for x in beap.iter() {
@@ -75,8 +87,8 @@ for x in beap.iter() {
 }
 
 // If we instead pop these scores, they should come back in order.
+assert_eq!(beap.pop(), Some(20));
 assert_eq!(beap.pop(), Some(5));
-assert_eq!(beap.pop(), Some(2));
 assert_eq!(beap.pop(), Some(1));
 assert_eq!(beap.pop(), None);
 

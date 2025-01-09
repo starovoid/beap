@@ -21,6 +21,22 @@
 //!
 //! [`BinaryHeap`]: std::collections::BinaryHeap
 //!
+//! # Operations
+//! | Operation       | Method                  | Time complexity  |
+//! | --------------- | ----------------------- | -----------------|
+//! | get max         | `Beap::peak`            | *O*(1)           |
+//! | push            | `Beap::push`            | *O*(sqrt(*2n*))  |
+//! | pop             | `Beap::pop`             | *O*(sqrt(*2n*))  |
+//! | search          | `Beap::index`           | *O*(sqrt(*2n*))  |
+//! | remove by value | `Beap::remove`          | *O*(sqrt(*2n*))  |
+//! | replace value   | `Beap::replace`         | *O*(sqrt(*2n*))  |
+//! | get min         | `Beap::tail`            | *O*(sqrt(*2n*))  |
+//! | pop min         | `Beap::pop_tail`        | *O*(sqrt(*2n*))  |
+//! | heapify         | `Beap::from`            | *O*(n*log(*n*))  |
+//! | merge           | `Beap::append`          | *O*(n*log(*n*))  |
+//! | into sorted     | `Beap::into_sorted_vec` | *O*(n*log(*n*))  |
+//! | ............... | ....................... | ................ |
+//!
 
 mod core;
 pub mod iter;
@@ -58,6 +74,18 @@ use std::ops::{Deref, DerefMut};
 /// // We can check the length of a beap.
 /// assert_eq!(beap.len(), 3);
 ///
+/// // You can check if an item is contained in the beap.
+/// assert!(beap.contains(&2));
+///
+/// // Or get mutable access to it:
+/// let idx = beap.index(&2).unwrap();
+/// {
+///     let mut val = beap.get_mut(idx).unwrap();
+///     assert_eq!(*val, 2);
+///     *val = 20;
+/// }
+/// assert_eq!(beap.peek(), Some(&20));
+///
 /// // We can iterate over the items in the beap, although they are returned in
 /// // a random order.
 /// for x in beap.iter() {
@@ -65,8 +93,8 @@ use std::ops::{Deref, DerefMut};
 /// }
 ///
 /// // If we instead pop these scores, they should come back in order.
+/// assert_eq!(beap.pop(), Some(20));
 /// assert_eq!(beap.pop(), Some(5));
-/// assert_eq!(beap.pop(), Some(2));
 /// assert_eq!(beap.pop(), Some(1));
 /// assert_eq!(beap.pop(), None);
 ///
@@ -87,7 +115,7 @@ use std::ops::{Deref, DerefMut};
 ///
 /// ## Min-heap
 ///
-/// Either [`core::cmp::Reverse`] or a custom [`Ord`] implementation can be used to
+/// Either [`std::cmp::Reverse`] or a custom [`Ord`] implementation can be used to
 /// make `Beap` a min-heap. This makes `beap.pop()` return the smallest
 /// value instead of the greatest one.
 ///

@@ -12,19 +12,35 @@ Beap (bi-parental heap) is an
 which allows efficient insertion and searching of elements, requiring low (*O*(1)) overhead.
 
 Insertion and popping the largest element have *O*(sqrt(*2n*)) time complexity.
-Checking the largest element is *O*(1). Converting a vector to a beap
+Checking the largest element is *O*(1). Converting a vector to a **Beap**
 can be done by using sorting, and has *O*(nlog(*n*)) time complexity.
 Despite the insertion and popping operations that are slower compared to the classical binary heap,
-the bi-parental heap has an important advantage:
-searching and removing an arbitrary element, as well as finding the minimum,
+the **bi-parental heap** has an important advantage:
+searching and removing an arbitrary element, as well as finding the minimum priority,
 have the asymptotics *O*(sqrt(*2n*),) while the binary heap has *O*(*n*).
 
 This create presents an implementation of the bi-parental heap - `Beap`,
 which has an identical interface with [`BinaryHeap`](https://doc.rust-lang.org/stable/std/collections/struct.BinaryHeap.html) from `std::collections`,
 and at the same time it has several new useful methods.
 
-# Read about bi-parental heap:
+### Read about bi-parental heap:
 * [Wikipedia](https://en.wikipedia.org/wiki/Beap)
+
+## Operations
+| Operation       | Method                  | Time complexity  |
+| --------------- | ----------------------- | ---------------- |
+| get max         | `Beap::peak`            | *O*(1)           |
+| push            | `Beap::push`            | *O*(sqrt(*2n*))  |
+| pop             | `Beap::pop`             | *O*(sqrt(*2n*))  |
+| search          | `Beap::index`           | *O*(sqrt(*2n*))  |
+| remove by value | `Beap::remove`          | *O*(sqrt(*2n*))  |
+| replace value   | `Beap::replace`         | *O*(sqrt(*2n*))  |
+| get min         | `Beap::tail`            | *O*(sqrt(*2n*))  |
+| pop min         | `Beap::pop_tail`        | *O*(sqrt(*2n*))  |
+| heapify         | `Beap::from`            | *O*(n*log(*n*))  |
+| merge           | `Beap::append`          | *O*(n*log(*n*))  |
+| into sorted     | `Beap::into_sorted_vec` | *O*(n*log(*n*))  |
+| ............... | ....................... | ................ |
 
 ## Usage
 

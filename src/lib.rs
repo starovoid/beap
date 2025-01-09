@@ -21,6 +21,22 @@
 //!
 //! [`BinaryHeap`]: std::collections::BinaryHeap
 //!
+//! # Operations
+//! | Operation       | Method                  | Time complexity  |
+//! | --------------- | ----------------------- | -----------------|
+//! | get max         | `Beap::peak`            | *O*(1)           |
+//! | push            | `Beap::push`            | *O*(sqrt(*2n*))  |
+//! | pop             | `Beap::pop`             | *O*(sqrt(*2n*))  |
+//! | search          | `Beap::index`           | *O*(sqrt(*2n*))  |
+//! | remove by value | `Beap::remove`          | *O*(sqrt(*2n*))  |
+//! | replace value   | `Beap::replace`         | *O*(sqrt(*2n*))  |
+//! | get min         | `Beap::tail`            | *O*(sqrt(*2n*))  |
+//! | pop min         | `Beap::pop_tail`        | *O*(sqrt(*2n*))  |
+//! | heapify         | `Beap::from`            | *O*(n*log(*n*))  |
+//! | merge           | `Beap::append`          | *O*(n*log(*n*))  |
+//! | into sorted     | `Beap::into_sorted_vec` | *O*(n*log(*n*))  |
+//! | ............... | ....................... | ................ |
+//!
 
 mod core;
 pub mod iter;

@@ -15,10 +15,10 @@ categories = ["data-structures"]
 name = "beap"
 
 [dependencies]
-criterion = "0.5.1"
 
 [dev-dependencies]
 rand = {version = "0.8", features = ["small_rng"]}
+criterion = "0.5"
 
 [[bench]]
 name = "benches"

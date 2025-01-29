@@ -14,11 +14,15 @@ categories = ["data-structures"]
 [lib]
 name = "beap"
 
+[features]
+serde = ["dep:serde"]
+
 [dependencies]
-criterion = "0.5.1"
+serde = {version = "1", optional = true}
 
 [dev-dependencies]
 rand = {version = "0.8", features = ["small_rng"]}
+criterion = "0.5"
 
 [[bench]]
 name = "benches"

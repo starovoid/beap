@@ -46,6 +46,9 @@ pub use iter::{Drain, IntoIter, Iter};
 use std::fmt;
 use std::ops::{Deref, DerefMut};
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 /// A priority queue implemented with a bi-parental heap (beap).
 ///
 /// This will be a max-heap.
@@ -145,6 +148,9 @@ use std::ops::{Deref, DerefMut};
 /// let beap = Beap::from([5, 3, 1, 7]);
 /// assert_eq!(beap.into_sorted_vec(), vec![1, 3, 5, 7]);
 /// ```
+
+#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Beap<T> {
     data: Vec<T>,
     height: usize,

@@ -11,6 +11,8 @@ Beap (bi-parental heap) is an
 [implict data structure](https://en.wikipedia.org/wiki/Implicit_data_structure)
 which allows efficient insertion and searching of elements, requiring low (*O*(1)) overhead.
 
+![Beap](assets/Beap.jpg)
+
 Insertion and popping the largest element have *O*(sqrt(*2n*)) time complexity.
 Checking the largest element is *O*(1). Converting a vector to a **Beap**
 can be done by using sorting, and has *O*(nlog(*n*)) time complexity.
@@ -40,7 +42,6 @@ and at the same time it has several new useful methods.
 | heapify         | `Beap::from`            | *O*(n*log(*n*))  |
 | merge           | `Beap::append`          | *O*(n*log(*n*))  |
 | into sorted     | `Beap::into_sorted_vec` | *O*(n*log(*n*))  |
-| ............... | ....................... | ................ |
 
 ## Usage
 
